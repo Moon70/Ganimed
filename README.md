@@ -10,7 +10,7 @@ This program creates a GIF file from a series of single image files.
 
 __Features:__
 
-![](Ganimed_screenshot.png)
+![](Ganimed_Screenshot.png)
 
 * easy cropping, resizing and framerate adjusting
 
@@ -38,7 +38,7 @@ ffmpeg.exe -y -i TheVideoFile.avi -f image2 -c:v png "image%03d.png"
 
 __Ganimed usage:__
 
-![](DemoTime.gif)
+![](Demotime.gif)
 
 Image folder
 --
