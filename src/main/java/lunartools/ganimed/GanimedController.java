@@ -14,19 +14,19 @@ import lunartools.ganimed.gui.SimpleEvents;
 public class GanimedController implements Observer{
 	private static final String SETTING__GANIMED_VIEW_LOCATION = "GanimedViewLocation";
 	private static final String SETTING__IMAGE_FOLDER = "ImageFolder";
-	private static final String SETTING__GIF_FOLDER = "GifFolder";
+	private static final String SETTING__ANIM_FOLDER = "AnimFolder";
 	private GanimedModel model;
 	private GanimedView view;
 	private ImageService imageService;
 	private AnimationThread threadAnimation;
 	private Settings settings;
 	private volatile boolean shutdownInProgress;
-	
+
 	public GanimedController(){
 		settings=new Settings(GanimedModel.PROGRAMNAME,GanimedModel.determineProgramVersion());
 		model=new GanimedModel();
 		model.setLastImageFolder(settings.getString(SETTING__IMAGE_FOLDER));
-		model.setGifFolder(settings.getString(SETTING__GIF_FOLDER));
+		model.setAnimFolder(settings.getString(SETTING__ANIM_FOLDER));
 		model.addObserver(this);
 		view=new GanimedView(model);
 		view.setLocation(settings.getPoint(SETTING__GANIMED_VIEW_LOCATION, view.getLocation()));
@@ -39,32 +39,33 @@ public class GanimedController implements Observer{
 		threadAnimation=new AnimationThread(model,view,imageService);
 		threadAnimation.start();
 	}
-	
+
 	@Override
 	public void update(Observable observable, Object object) {
 		if(object==SimpleEvents.EXIT) {
 			exit();
-		}else if(object==SimpleEvents.SAVEGIF) {
-			imageService.saveGif();
+		}else if(object==SimpleEvents.SAVEAS) {
+			imageService.saveAs();
 		}else if(object==SimpleEvents.MODEL_IMAGEFOLDERCHANGED) {
 			imageService.processImageFolder();
 		}else if(object==SimpleEvents.MODEL_IMAGESCHANGED) {
-			imageService.createGif();
-		}else if(object==SimpleEvents.MODEL_GIFNUMBEROFIMAGESCHANGED) {
-			imageService.createGif();
+			imageService.createAnim();
+		}else if(object==SimpleEvents.MODEL_ANIMNUMBEROFIMAGESCHANGED) {
+			imageService.createAnim();
 		}else if(object==SimpleEvents.MODEL_IMAGESIZECHANGED) {
 			if(model.getImageFolder()!=null) {
-				imageService.createGif();
+				imageService.createAnim();
 			}
-		}else if(object==SimpleEvents.MODEL_GIFBYTEARRAYCHANGED) {
-			if(model.getBytearrayGif()!=null) {
+		}else if(object==SimpleEvents.MODEL_ANIMBYTEARRAYCHANGED) {
+			if(model.getBytearrayAnim()!=null) {
 				Dimension resultImageSize=imageService.getResultImageSize();
-				int gifSizeInMb=model.getBytearrayGif().length*10/1024/1024;
-				setStatusInfo("GIF size: "+resultImageSize.width+" x "+resultImageSize.height+", "+((double)gifSizeInMb)/10+" mb");	
+				int animSizeInMb=model.getBytearrayAnim().length*10/1024/1024;
+				String imageTypename=model.getImageType().getName();
+				setStatusInfo(imageTypename+" size: "+resultImageSize.width+" x "+resultImageSize.height+", "+((double)animSizeInMb)/10+" mb");	
 			}
 		}
 	}
-	
+
 	public void setStatusInfo(String message) {
 		view.setStatusInfo(message);
 	}
@@ -76,7 +77,7 @@ public class GanimedController implements Observer{
 	public void setProgressBarValue(int value) {
 		view.setProgressBarValue(value);
 	}
-	
+
 	public void setProgressBarValue(int value, String message) {
 		view.setProgressBarValue(value,message);
 	}
@@ -88,7 +89,7 @@ public class GanimedController implements Observer{
 	public void disableProgressBar() {
 		view.disableProgressBar();
 	}
-	
+
 	private void exit() {
 		shutdownInProgress=true;
 		settings.setPoint(SETTING__GANIMED_VIEW_LOCATION, view.getLocation());
@@ -96,9 +97,9 @@ public class GanimedController implements Observer{
 		if(file!=null) {
 			settings.set(SETTING__IMAGE_FOLDER, file.getAbsolutePath());
 		}
-		file=model.getGifFolder();
+		file=model.getAnimFolder();
 		if(file!=null) {
-			settings.set(SETTING__GIF_FOLDER, file.getAbsolutePath());
+			settings.set(SETTING__ANIM_FOLDER, file.getAbsolutePath());
 		}
 
 		try {
@@ -121,5 +122,5 @@ public class GanimedController implements Observer{
 	public boolean isShutdownInProgress() {
 		return shutdownInProgress;
 	}
-	
+
 }

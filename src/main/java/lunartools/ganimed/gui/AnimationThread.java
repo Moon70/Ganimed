@@ -12,13 +12,13 @@ public class AnimationThread extends Thread{
 	private GanimedView view;
 	private ImageService imageService;
 	private volatile boolean shutdown;
-	
+
 	public AnimationThread(GanimedModel model,GanimedView view,ImageService imageService) {
 		this.model=model;
 		this.view=view;
 		this.imageService=imageService;
 	}
-	
+
 	@Override
 	public void run() {
 		double index=0;
@@ -34,7 +34,7 @@ public class AnimationThread extends Thread{
 			if(bufferedImages!=null) {
 				resultImageSize=imageService.getResultImageSize();
 				int offsetX=(view.getWidth()-resultImageSize.width)>>1;
-				
+
 				Graphics graphics=view.getGraphics();
 				if(lastResultImageSize==null || lastResultImageSize.width!=resultImageSize.width ||lastResultImageSize.height!=resultImageSize.height) {
 					graphics.setColor(view.getBackground());
@@ -56,9 +56,9 @@ public class AnimationThread extends Thread{
 				}
 			}
 			try {
-				sleep=timestamp-System.currentTimeMillis()+model.getGifDelay();
+				sleep=timestamp-System.currentTimeMillis()+model.getAnimDelay();
 				if(index==0) {
-					sleep+=model.getGifEndDelay();
+					sleep+=model.getAnimEndDelay();
 				}
 				if(sleep>0) {
 					Thread.sleep(sleep);
@@ -72,5 +72,5 @@ public class AnimationThread extends Thread{
 	public void shutdown() {
 		shutdown=true;
 	}
-	
+
 }

@@ -2,7 +2,9 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>lunartools</groupId>
   <artifactId>ganimed</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
+  <name>Ganimed</name>
+  <description>Creates a GIF or APNG animation from a series of single image files</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -53,4 +55,16 @@
 			</plugin>
 		</plugins>
 	</build>
+	<dependencies>
+		<dependency>
+			<groupId>lunartools</groupId>
+			<artifactId>gpac</artifactId>
+ 			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+		  <groupId>lunartools</groupId>
+		  <artifactId>apngbuilder</artifactId>
+		  <version>0.0.1</version>
+		</dependency>
+	</dependencies>
 </project>

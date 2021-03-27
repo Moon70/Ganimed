@@ -11,18 +11,21 @@ import javax.imageio.ImageIO;
 
 import lunartools.FileTools;
 import lunartools.colorquantizer.GPAC_experimental;
+import lunartools.ganimed.imagetype.ImageType;
+import lunartools.ganimed.imagetype.ImageTypeApng;
+import lunartools.ganimed.imagetype.ImageTypeGif;
 
 public class ImageService {
 	private GanimedModel model;
 	private GanimedController controller;
 	private volatile Thread processImageFolderThread;
-	private volatile Thread createGifThread;
+	private volatile Thread createAnimThread;
 
 	public ImageService(GanimedModel model,GanimedController controller) {
 		this.model=model;
 		this.controller=controller;
 	}
-	
+
 	public Dimension getResultImageSize() {
 		int width=model.getCropRight()-model.getCropLeft();
 		int height=model.getCropBottom()-model.getCropTop();
@@ -46,7 +49,7 @@ public class ImageService {
 				null);
 		return bufferedImage;
 	}
-	
+
 	public void processImageFolder() {
 		if(processImageFolderThread!=null && processImageFolderThread.isAlive()) {
 			processImageFolderThread.interrupt();
@@ -85,13 +88,13 @@ public class ImageService {
 		processImageFolderThread.start();
 	}
 
-	private volatile boolean createGif_sleeping=false;
-	private volatile long createGif_sleepUntil=0;
-	public void createGif() {
-		Thread thread=createGifThread;
+	private volatile boolean createAnim_sleeping=false;
+	private volatile long createAnim_sleepUntil=0;
+	public void createAnim() {
+		Thread thread=createAnimThread;
 		if(thread!=null) {
-			if(createGif_sleeping && createGif_sleepUntil+200>System.currentTimeMillis()) {
-				createGif_sleepUntil=System.currentTimeMillis()+5000;
+			if(createAnim_sleeping && createAnim_sleepUntil+200>System.currentTimeMillis()) {
+				createAnim_sleepUntil=System.currentTimeMillis()+5000;
 				return;
 			}
 			thread.interrupt();	
@@ -100,33 +103,35 @@ public class ImageService {
 			} catch (InterruptedException e) {
 			}
 		}
-		createGifThread=new Thread() {
+		createAnimThread=new Thread() {
 			public void run() {
 				try {
-					createGif_sleeping=true;
-					createGif_sleepUntil=System.currentTimeMillis()+5000;
-					while(createGif_sleepUntil>System.currentTimeMillis() || model.getNumberOfImagesToSkip()==0) {
+					createAnim_sleeping=true;
+					createAnim_sleepUntil=System.currentTimeMillis()+5000;
+					while(createAnim_sleepUntil>System.currentTimeMillis() || model.getNumberOfImagesToSkip()==0) {
 						if(controller.isShutdownInProgress()) {
 							return;
 						}
 						Thread.sleep(500);
 					}
-					createGif_sleeping=false;
-					model.setBytearrayGif(null);
-					controller.setStatusInfo("estimating GIF size in background task...");
-					model.setBytearrayGif(createGifByteArray(false));
+					createAnim_sleeping=false;
+					model.setBytearrayAnim(null);
+					String imageTypename=model.getImageType().getName();
+					controller.setStatusInfo("estimating "+imageTypename+" size in background task...");
+					model.setBytearrayAnim(createAnimByteArray(false));
 				} catch (InterruptedException e1) {
 					controller.setStatusInfo("");
 					return;
 				}finally {
-					createGifThread=null;
+					createAnimThread=null;
 				}
 			};
 		};
-		createGifThread.start();
+		createAnimThread.start();
 	}
-	
-	public byte[] createGifByteArray(boolean showProgressBar) {
+
+	public byte[] createAnimByteArray(boolean showProgressBar) {
+		ImageType imageType=model.getImageType();
 		try {
 			Vector<Integer> vecIndexTable=new Vector<Integer>();
 			for(double index=0;(index+0.5)<model.getBufferedImages().length;index+=model.getNumberOfImagesToSkip()) {
@@ -135,10 +140,17 @@ public class ImageService {
 			if(showProgressBar) {
 				controller.enableProgressBar(vecIndexTable.size());
 			}
-			GifAnimCreator gifAnimCreator=new GifAnimCreator();
+			AnimCreator animCreator;
+			if(imageType instanceof ImageTypeGif) {
+				animCreator=new GifAnimCreator();
+			}else if(model.getImageType() instanceof ImageTypeApng) {
+				animCreator=new PngAnimCreator();
+			}else {
+				throw new RuntimeException("unknown image type: "+model.getImageType());
+			}
 			for(int i=0;i<vecIndexTable.size();i++) {
 				if(showProgressBar) {
-					controller.setProgressBarValue(i,"creating GIF...");
+					controller.setProgressBarValue(i,"creating "+imageType.getName()+"...");
 				}
 				if(Thread.interrupted() || controller.isShutdownInProgress()) {
 					return null;
@@ -146,9 +158,9 @@ public class ImageService {
 				BufferedImage bufferedImage=getResultBufferedImage(vecIndexTable.get(i));
 				new GPAC_experimental().quantizeColors(bufferedImage,256);
 				if(i<vecIndexTable.size()-1) {
-					gifAnimCreator.addImage(bufferedImage, model.getGifDelay(), false);
+					animCreator.addImage(bufferedImage, model.getAnimDelay(), false);
 				}else {
-					gifAnimCreator.addImage(bufferedImage, model.getGifEndDelay(), false);
+					animCreator.addImage(bufferedImage, model.getAnimEndDelay(), false);
 				}
 				if(Thread.currentThread().isInterrupted()) {
 					controller.disableProgressBar();
@@ -158,28 +170,29 @@ public class ImageService {
 			if(showProgressBar) {
 				controller.disableProgressBar();
 			}
-			return gifAnimCreator.toByteArray();
+			return animCreator.toByteArray();
 		} catch (Exception e) {
-			controller.setStatusError("Error creating GIF: "+e.getMessage());
+			controller.setStatusError("Error creating "+imageType.getName()+": "+e.getMessage());
 			e.printStackTrace();
 			return null;
 		}
 	}
-	
-	public void saveGif() {
+
+	public void saveAs() {
 		Thread threadSave=new Thread() {
 			public void run() {
+				String imageTypename=model.getImageType().getName();
 				try {
-					byte[] data=createGifByteArray(true);
-					FileTools.writeFile(model.getGifFile(), data);
-					controller.setStatusInfo("GIF file saved: "+model.getGifFile());
+					byte[] data=createAnimByteArray(true);
+					FileTools.writeFile(model.getAnimFile(), data);
+					controller.setStatusInfo(imageTypename+" file saved: "+model.getAnimFile());
 				} catch (Exception e) {
-					controller.setStatusError("ERROR creating/saving GIF file: "+e.getMessage());
+					controller.setStatusError("ERROR creating/saving "+imageTypename+" file: "+e.getMessage());
 					e.printStackTrace();
 				}
 			}
 		};
-		
+
 		threadSave.setDaemon(true);
 		threadSave.start();
 	}

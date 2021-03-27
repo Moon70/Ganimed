@@ -6,7 +6,7 @@ public class MainGanimed{
 
 	/*
 	 * Ganimed
-	 * Creates a GIF from a set of single imager files.
+	 * Creates a GIF/PNG from a set of single image files.
 	 * 
 	 * Written by Thomas Mattel in february 2021.
 	 * https://github.com/Moon70/Ganimed

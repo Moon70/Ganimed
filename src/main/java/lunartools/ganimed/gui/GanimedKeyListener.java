@@ -9,12 +9,12 @@ import lunartools.ganimed.GanimedModel;
 public class GanimedKeyListener implements KeyListener{
 	private GanimedModel model;
 	private GanimedView view;
-	
+
 	public GanimedKeyListener(GanimedModel model,GanimedView view) {
 		this.model=model;
 		this.view=view;
 	}
-	
+
 	@Override
 	public void keyTyped(KeyEvent e) {}
 
@@ -37,12 +37,12 @@ public class GanimedKeyListener implements KeyListener{
 
 			}else if(event.getSource()==view.textfieldResize) {
 				model.setResizePercent(Integer.parseInt(view.textfieldResize.getText()));
-			}else if(event.getSource()==view.textfieldGifFps) {
-				model.setGifFps(Integer.parseInt(view.textfieldGifFps.getText()));
-			}else if(event.getSource()==view.textfieldGifDelay) {
-				model.setGifDelay(Integer.parseInt(view.textfieldGifDelay.getText()));
-			}else if(event.getSource()==view.textfieldGifEndDelay) {
-				model.setGifEndDelay(Integer.parseInt(view.textfieldGifEndDelay.getText()));
+			}else if(event.getSource()==view.textfieldAnimFps) {
+				model.setAnimFps(Integer.parseInt(view.textfieldAnimFps.getText()));
+			}else if(event.getSource()==view.textfieldAnimDelay) {
+				model.setAnimDelay(Integer.parseInt(view.textfieldAnimDelay.getText()));
+			}else if(event.getSource()==view.textfieldAnimEndDelay) {
+				model.setAnimEndDelay(Integer.parseInt(view.textfieldAnimEndDelay.getText()));
 			}
 		}
 	}

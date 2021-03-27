@@ -25,16 +25,17 @@ import abyss.lunarengine.tools.ObservableJFrame;
 import lunartools.FileTools;
 import lunartools.ScreenTools;
 import lunartools.ganimed.GanimedModel;
+import lunartools.ganimed.imagetype.ImageType;
 
 public class GanimedView extends ObservableJFrame implements Observer{
 	protected JTextField textfieldFolderpath;
 	protected JTextField textfieldImagesFps;
-	protected JTextField textfieldGifFps;
-	protected JTextField textfieldGifDelay;
-	protected JTextField textfieldGifEndDelay;
-	protected Scrollbar scrollbarGifFps;
-	protected Scrollbar scrollbarGifDelay;
-	protected Scrollbar scrollbarGifEndDelay;
+	protected JTextField textfieldAnimFps;
+	protected JTextField textfieldAnimDelay;
+	protected JTextField textfieldAnimEndDelay;
+	protected Scrollbar scrollbarAnimFps;
+	protected Scrollbar scrollbarAnimDelay;
+	protected Scrollbar scrollbarAnimEndDelay;
 	protected JTextField textfieldCropLeft;
 	protected JTextField textfieldCropTop;
 	protected Scrollbar scrollbarCropLeft;
@@ -185,48 +186,48 @@ public class GanimedView extends ObservableJFrame implements Observer{
 
 		y+=lineDistance2;
 		
-		label=new JLabel("GIF FPS:");
+		label=new JLabel("Anim FPS:");
 		label.setBounds(xLabel1,y,100,lineHight);
 		add(label);
-		textfieldGifFps=new JTextField(200);
-		textfieldGifFps.setBounds(xField1,y,32,lineHight);
-		textfieldGifFps.addKeyListener(keyListener);
-		add(textfieldGifFps);
-		scrollbarGifFps=new Scrollbar(Scrollbar.HORIZONTAL,model.getGifFps(),1,1,0);
-		scrollbarGifFps.setBounds(xScrollbar1,y+4,255+16+16,scrollHeight);
-		scrollbarGifFps.setBackground(Color.DARK_GRAY);
-		scrollbarGifFps.setForeground(Color.BLUE);
-		scrollbarGifFps.addAdjustmentListener(adjustmentlistener);
-		add(scrollbarGifFps);
+		textfieldAnimFps=new JTextField(200);
+		textfieldAnimFps.setBounds(xField1,y,32,lineHight);
+		textfieldAnimFps.addKeyListener(keyListener);
+		add(textfieldAnimFps);
+		scrollbarAnimFps=new Scrollbar(Scrollbar.HORIZONTAL,model.getAnimFps(),1,1,0);
+		scrollbarAnimFps.setBounds(xScrollbar1,y+4,255+16+16,scrollHeight);
+		scrollbarAnimFps.setBackground(Color.DARK_GRAY);
+		scrollbarAnimFps.setForeground(Color.BLUE);
+		scrollbarAnimFps.addAdjustmentListener(adjustmentlistener);
+		add(scrollbarAnimFps);
 
-		label=new JLabel("GIF delay:");
+		label=new JLabel("Anim delay:");
 		label.setBounds(xLabel2,y,100,lineHight);
 		add(label);
-		textfieldGifDelay=new JTextField(4);
-		textfieldGifDelay.setBounds(xField2,y,32,lineHight);
-		textfieldGifDelay.setText(""+model.getGifDelay());
-		textfieldGifDelay.addKeyListener(keyListener);
-		add(textfieldGifDelay);
-		scrollbarGifDelay=new Scrollbar(Scrollbar.HORIZONTAL,model.getGifDelay(),1,16,1001);
-		scrollbarGifDelay.setBounds(xScrollbar2,y+4,255+16+16,scrollHeight);
-		scrollbarGifDelay.setBackground(Color.DARK_GRAY);
-		scrollbarGifDelay.addAdjustmentListener(adjustmentlistener);
-		add(scrollbarGifDelay);
+		textfieldAnimDelay=new JTextField(4);
+		textfieldAnimDelay.setBounds(xField2,y,32,lineHight);
+		textfieldAnimDelay.setText(""+model.getAnimDelay());
+		textfieldAnimDelay.addKeyListener(keyListener);
+		add(textfieldAnimDelay);
+		scrollbarAnimDelay=new Scrollbar(Scrollbar.HORIZONTAL,model.getAnimDelay(),1,16,1001);
+		scrollbarAnimDelay.setBounds(xScrollbar2,y+4,255+16+16,scrollHeight);
+		scrollbarAnimDelay.setBackground(Color.DARK_GRAY);
+		scrollbarAnimDelay.addAdjustmentListener(adjustmentlistener);
+		add(scrollbarAnimDelay);
 
 		y+=lineDistance;
 		
 		label=new JLabel("End delay:");
 		label.setBounds(xLabel1,y,100,lineHight);
 		add(label);
-		textfieldGifEndDelay=new JTextField(4);
-		textfieldGifEndDelay.setBounds(xField1,y,32,lineHight);
-		textfieldGifEndDelay.addKeyListener(keyListener);
-		add(textfieldGifEndDelay);
-		scrollbarGifEndDelay=new Scrollbar(Scrollbar.HORIZONTAL,model.getGifEndDelay(),1,0,5001);
-		scrollbarGifEndDelay.setBounds(xScrollbar1,y+4,255+16+16,scrollHeight);
-		scrollbarGifEndDelay.setBackground(Color.DARK_GRAY);
-		scrollbarGifEndDelay.addAdjustmentListener(adjustmentlistener);
-		add(scrollbarGifEndDelay);
+		textfieldAnimEndDelay=new JTextField(4);
+		textfieldAnimEndDelay.setBounds(xField1,y,32,lineHight);
+		textfieldAnimEndDelay.addKeyListener(keyListener);
+		add(textfieldAnimEndDelay);
+		scrollbarAnimEndDelay=new Scrollbar(Scrollbar.HORIZONTAL,model.getAnimEndDelay(),1,0,5001);
+		scrollbarAnimEndDelay.setBounds(xScrollbar1,y+4,255+16+16,scrollHeight);
+		scrollbarAnimEndDelay.setBackground(Color.DARK_GRAY);
+		scrollbarAnimEndDelay.addAdjustmentListener(adjustmentlistener);
+		add(scrollbarAnimEndDelay);
 
 		y+=lineDistance;
 		
@@ -262,12 +263,12 @@ public class GanimedView extends ObservableJFrame implements Observer{
 	@Override
 	public void update(Observable observable,Object object){
 		if(observable instanceof GanimedModel) {
-			if(object==SimpleEvents.MODEL_GIFPLAYBACKVALUESCHANGED) {
-				refreshGifPlaybackValues();
+			if(object==SimpleEvents.MODEL_ANIMPLAYBACKVALUESCHANGED) {
+				refreshAnimPlaybackValues();
 			}else if(object==SimpleEvents.MODEL_IMAGESIZECHANGED) {
 				refreshGui();
 			}else if(object.equals(SimpleEvents.MODEL_IMAGESCHANGED)) {
-				menubarController.menuItem_SaveGif.setEnabled(true);
+				menubarController.menuItem_SaveAs.setEnabled(true);
 				refreshGui();
 				resizeFrame();
 			}
@@ -287,16 +288,16 @@ public class GanimedView extends ObservableJFrame implements Observer{
 		setBounds(ScreenTools.getInstance().optimizeBounds(getBounds(),rectangle));
 	}
 	
-	private void refreshGifPlaybackValues() {
+	private void refreshAnimPlaybackValues() {
 		textfieldImagesFps.setText(""+model.getImagesFps());
-		textfieldGifFps.setText(""+model.getGifFps());
-		scrollbarGifFps.setMaximum(model.getGifFpsMax());
-		scrollbarGifFps.setValue(model.getGifFps());
-		textfieldGifDelay.setText(""+model.getGifDelay());
-		scrollbarGifDelay.setValue(model.getGifDelay());
-		textfieldGifEndDelay.setText(""+model.getGifEndDelay());
-		scrollbarGifEndDelay.setMaximum(model.getGifEndDelayMax());
-		scrollbarGifEndDelay.setValue(model.getGifEndDelay());
+		textfieldAnimFps.setText(""+model.getAnimFps());
+		scrollbarAnimFps.setMaximum(model.getAnimFpsMax());
+		scrollbarAnimFps.setValue(model.getAnimFps());
+		textfieldAnimDelay.setText(""+model.getAnimDelay());
+		scrollbarAnimDelay.setValue(model.getAnimDelay());
+		textfieldAnimEndDelay.setText(""+model.getAnimEndDelay());
+		scrollbarAnimEndDelay.setMaximum(model.getAnimEndDelayMax());
+		scrollbarAnimEndDelay.setValue(model.getAnimEndDelay());
 	}
 	
 	private void refreshGui() {
@@ -312,12 +313,12 @@ public class GanimedView extends ObservableJFrame implements Observer{
 			scrollbarCropBottom.setEnabled(false);
 			textfieldResize.setEnabled(false);
 			scrollbarResize.setEnabled(false);
-			textfieldGifFps.setEnabled(false);
-			scrollbarGifFps.setEnabled(false);
-			textfieldGifDelay.setEnabled(false);
-			scrollbarGifDelay.setEnabled(false);
-			textfieldGifEndDelay.setEnabled(false);
-			scrollbarGifEndDelay.setEnabled(false);
+			textfieldAnimFps.setEnabled(false);
+			scrollbarAnimFps.setEnabled(false);
+			textfieldAnimDelay.setEnabled(false);
+			scrollbarAnimDelay.setEnabled(false);
+			textfieldAnimEndDelay.setEnabled(false);
+			scrollbarAnimEndDelay.setEnabled(false);
 			
 			setStatusInfo("READY, select an image folder");
 		}else {
@@ -332,12 +333,12 @@ public class GanimedView extends ObservableJFrame implements Observer{
 			scrollbarCropBottom.setEnabled(true);
 			textfieldResize.setEnabled(true);
 			scrollbarResize.setEnabled(true);
-			textfieldGifFps.setEnabled(true);
-			scrollbarGifFps.setEnabled(true);
-			textfieldGifDelay.setEnabled(true);
-			scrollbarGifDelay.setEnabled(true);
-			textfieldGifEndDelay.setEnabled(true);
-			scrollbarGifEndDelay.setEnabled(true);
+			textfieldAnimFps.setEnabled(true);
+			scrollbarAnimFps.setEnabled(true);
+			textfieldAnimDelay.setEnabled(true);
+			scrollbarAnimDelay.setEnabled(true);
+			textfieldAnimEndDelay.setEnabled(true);
+			scrollbarAnimEndDelay.setEnabled(true);
 			
 		}
 		scrollbarCropLeft.setMinimum(model.getCropLeftMin());
@@ -397,48 +398,42 @@ public class GanimedView extends ObservableJFrame implements Observer{
 		}
 	}
 	
-	public void saveGif() {
+	public void saveAs() {
 		final JFileChooser fileChooser= new JFileChooser() {
 			 public void updateUI() {
                  putClientProperty("FileChooser.useShellFolder", Boolean.FALSE);
                  super.updateUI();
              }
 		};
-		File lastfile=model.getGifFile();
 		fileChooser.setAcceptAllFileFilterUsed(false);
-		fileChooser.setFileFilter(new FileFilter() {
-			
-			@Override
-			public String getDescription() {
-				return "GIF";
+		for(ImageType imageType:model.getImageTypes()) {
+			FileFilter fileFilter=new ImageFileFilter(imageType.getName(),imageType.getFileExtension());
+			fileChooser.addChoosableFileFilter(fileFilter);
+			if(imageType == model.getImageType()) {
+				fileChooser.setFileFilter(fileFilter);
 			}
-			
-			@Override
-			public boolean accept(File f) {
-				if(f.isDirectory()) {
-					return true;
-				}
-				return f.getName().toLowerCase().endsWith(".gif");
-			}
-		});
-		
-		fileChooser.setCurrentDirectory(model.getGifFolder());
-		fileChooser.setSelectedFile(lastfile);
+		}
+		fileChooser.setCurrentDirectory(model.getAnimFolder());
+		File lastfile=model.getAnimFile();
+		if(lastfile!=null && lastfile.getName().endsWith(model.getImageType().getFileExtension())) {
+			fileChooser.setSelectedFile(lastfile);
+		}
 		int rc=fileChooser.showSaveDialog(this);
 		if(rc==JFileChooser.APPROVE_OPTION) {
-			File fileGif=fileChooser.getSelectedFile();
-			if(!fileGif.getName().toLowerCase().endsWith(".gif")) {
-				fileGif=new File(fileGif.getParentFile(),fileGif.getName()+".gif");
+			File fileAnim=fileChooser.getSelectedFile();
+			if(!fileAnim.getName().contains(".")) {
+				fileAnim=new File(fileAnim.getParentFile(),fileAnim.getName()+model.getImageType().getFileExtension());
 			}
-			if(fileGif.exists()) {
-				if(JOptionPane.showOptionDialog(this, "File already exists, OK to overwrite?\n"+fileGif.getAbsolutePath(), "Ganimed", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null)!=JOptionPane.OK_OPTION) {
-					setStatusInfo("save GIF canceled");
+			if(fileAnim.exists()) {
+				String imageTypename=model.getImageType().getName();
+				if(JOptionPane.showOptionDialog(this, "File already exists, OK to overwrite?\n"+fileAnim.getAbsolutePath(), "Ganimed", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null)!=JOptionPane.OK_OPTION) {
+					setStatusInfo("save "+imageTypename+" animation canceled");
 					return;
 				}
 			}
-			model.setGifFile(fileGif);
-			model.setGifFolder(fileChooser.getSelectedFile().getParentFile().getAbsolutePath());
-			sendMessage(SimpleEvents.SAVEGIF);
+			model.setAnimFile(fileAnim);
+			model.setAnimFolder(fileChooser.getSelectedFile().getParentFile().getAbsolutePath());
+			sendMessage(SimpleEvents.SAVEAS);
 		}
 	}
 

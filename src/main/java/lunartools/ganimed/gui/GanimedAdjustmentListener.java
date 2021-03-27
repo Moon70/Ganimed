@@ -14,16 +14,16 @@ public class GanimedAdjustmentListener implements AdjustmentListener{
 		this.model=model;
 		this.view=view;
 	}
-	
+
 	@Override
 	public void adjustmentValueChanged(AdjustmentEvent e) {
 		Scrollbar scrollbar=(Scrollbar)e.getSource();
-		if(scrollbar==view.scrollbarGifFps) {
-			model.setGifFps(scrollbar.getValue());
-		}else if(scrollbar==view.scrollbarGifDelay) {
-			model.setGifDelay(scrollbar.getValue());
-		}else if(scrollbar==view.scrollbarGifEndDelay) {
-			model.setGifEndDelay(scrollbar.getValue());
+		if(scrollbar==view.scrollbarAnimFps) {
+			model.setAnimFps(scrollbar.getValue());
+		}else if(scrollbar==view.scrollbarAnimDelay) {
+			model.setAnimDelay(scrollbar.getValue());
+		}else if(scrollbar==view.scrollbarAnimEndDelay) {
+			model.setAnimEndDelay(scrollbar.getValue());
 		}else if(scrollbar==view.scrollbarCropLeft) {
 			model.setCropLeft(scrollbar.getValue());
 		}else if(scrollbar==view.scrollbarCropTop) {

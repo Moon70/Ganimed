@@ -15,20 +15,20 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
-public class GifAnimCreator {
+public class GifAnimCreator implements AnimCreator{
 	private ByteArrayOutputStream baos;
 	private ImageOutputStream imageOutputStream;
 	private ImageWriter imageWriter;
 	private ImageWriteParam imageWriteParams;
 	private IIOMetadata iooMetadata;
 	private int delay;
-	
+
 	public void addImage(BufferedImage bufferedImage, int delay, boolean loop) throws IOException {
 		if(iooMetadata==null) {
 			this.delay=delay;
 			baos=new ByteArrayOutputStream();
 			imageOutputStream = new MemoryCacheImageOutputStream(baos);
-			
+
 			ImageTypeSpecifier imageTypeSpecifier = ImageTypeSpecifier.createFromBufferedImageType(bufferedImage.getType());
 			imageWriter = ImageIO.getImageWritersBySuffix("gif").next();
 			imageWriteParams = imageWriter.getDefaultWriteParam();
@@ -41,16 +41,16 @@ public class GifAnimCreator {
 			this.delay=delay;
 			configureRootMetadata(iooMetadata,delay, loop);
 		}
-		
+
 		imageWriter.writeToSequence(new IIOImage(bufferedImage, null, iooMetadata), imageWriteParams);
 	}
-	
+
 	public byte[] toByteArray() throws IOException {
 		imageWriter.endWriteSequence();
 		imageOutputStream.close();
 		return baos.toByteArray();
 	}
-	
+
 	private static void configureRootMetadata(IIOMetadata iooMetadata, int delay, boolean loop) throws IIOInvalidTreeException {
 		String metaFormatName = iooMetadata.getNativeMetadataFormatName();
 		IIOMetadataNode root = (IIOMetadataNode) iooMetadata.getAsTree(metaFormatName);
@@ -72,10 +72,10 @@ public class GifAnimCreator {
 
 		child.setUserObject(new byte[]{ 0x1, 0, 0});
 		appExtensionsNode.appendChild(child);
-		
+
 		iooMetadata.setFromTree(metaFormatName, root);
 	}
-	
+
 	private static IIOMetadataNode getNode(IIOMetadataNode rootNode, String nodeName){
 		for (int i = 0; i < rootNode.getLength(); i++){
 			if (rootNode.item(i).getNodeName().equalsIgnoreCase(nodeName)){

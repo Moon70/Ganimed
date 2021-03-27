@@ -4,28 +4,34 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
 
 import lunartools.ganimed.gui.SimpleEvents;
+import lunartools.ganimed.imagetype.ImageType;
+import lunartools.ganimed.imagetype.ImageTypeApng;
+import lunartools.ganimed.imagetype.ImageTypeGif;
 
 public class GanimedModel extends Observable{
 	public static final String PROGRAMNAME = "Ganimed";
 
+	private ImageType imageType;
+
 	private File fileImageFolder;
 	private File fileLastImageFolder;
-	private File fileGifFolder;
-	private File fileGif;
-	
+	private File fileAnimFolder;
+	private File fileAnim;
+
 	private int imagesFps;
 	private double numberOfImagesToSkip;
-	private int gifFps;
-	private int gifDelay;
-	private int gifEndDelay;
-	private final int gifEndDelayMaxDefault=5000;
-	private final int gifEndDelayMaxMax=216000;
-	private int gifEndDelayMax=gifEndDelayMaxDefault;
+	private int animFps;
+	private int animDelay;
+	private int animEndDelay;
+	private final int animEndDelayMaxDefault=5000;
+	private final int animEndDelayMaxMax=216000;
+	private int animEndDelayMax=animEndDelayMaxDefault;
 
 	private int imageWidth;
 	private int imageHeight;
@@ -45,11 +51,25 @@ public class GanimedModel extends Observable{
 	private int resizePercent;
 	private int resizeMin;
 	private int resizeMax;
-	private static final int MINIMUM_GIF_SIZE=16;
-	
+	private static final int MINIMUM_ANIM_SIZE=16;
+
 	private BufferedImage[] bufferedImages;
-	private byte[] bytearrayGif;
+	private byte[] bytearrayAnim;
 	private static String versionProgram;
+	private ArrayList<ImageType> imageTypes;
+
+	public GanimedModel() {
+		setImageType(ImageTypeGif.getInstance());
+	}
+
+	public ArrayList<ImageType> getImageTypes(){
+		if(imageTypes==null) {
+			imageTypes=new ArrayList<ImageType>();
+			imageTypes.add(ImageTypeGif.getInstance());
+			imageTypes.add(ImageTypeApng.getInstance());
+		}
+		return imageTypes;
+	}
 
 	@Override
 	public void addObserver(Observer observer) {
@@ -60,39 +80,39 @@ public class GanimedModel extends Observable{
 		this.fileImageFolder=file;
 		sendMessage(SimpleEvents.MODEL_IMAGEFOLDERCHANGED);
 	}
-	
+
 	public File getImageFolder() {
 		return fileImageFolder;
 	}
-	
+
 	public void setLastImageFolder(String path) {
 		if(path!=null) {
 			this.fileLastImageFolder=new File(path);
 		}
 	}
-	
+
 	public File getLastImageFolder() {
 		return fileLastImageFolder;
 	}
-	
-	public void setGifFolder(String path) {
+
+	public void setAnimFolder(String path) {
 		if(path!=null) {
-			this.fileGifFolder=new File(path);
+			this.fileAnimFolder=new File(path);
 		}
 	}
-	
-	public File getGifFolder() {
-		return fileGifFolder;
+
+	public File getAnimFolder() {
+		return fileAnimFolder;
 	}
-	
-	public void setGifFile(File file) {
-		this.fileGif=file;
+
+	public void setAnimFile(File file) {
+		this.fileAnim=file;
 	}
-	
-	public File getGifFile() {
-		return fileGif;
+
+	public File getAnimFile() {
+		return fileAnim;
 	}
-	
+
 	public void setImagesFps(int fps) {
 		if(this.imagesFps==fps) {
 			return;
@@ -101,15 +121,15 @@ public class GanimedModel extends Observable{
 			fps=1;
 		}
 		this.imagesFps=fps;
-		calculateGifPlaybackParameter();
+		calculateAnimPlaybackParameter();
 	}
 
 	public int getImagesFps() {
 		return imagesFps;
 	}
-	
-	public void setGifFps(int fps) {
-		if(this.gifFps==fps) {
+
+	public void setAnimFps(int fps) {
+		if(this.animFps==fps) {
 			return;
 		}
 		if(fps<1) {
@@ -118,31 +138,31 @@ public class GanimedModel extends Observable{
 		if(fps>imagesFps) {
 			fps=imagesFps;
 		}
-		this.gifFps=fps;
-		calculateGifPlaybackParameter();
-	}
-	
-	public int getGifFps() {
-		return gifFps;
+		this.animFps=fps;
+		calculateAnimPlaybackParameter();
 	}
 
-	public int getGifFpsMax() {
+	public int getAnimFps() {
+		return animFps;
+	}
+
+	public int getAnimFpsMax() {
 		return imagesFps+1;
 	}
 
-	public void calculateGifPlaybackParameter() {
-		if(gifFps==0) {
+	public void calculateAnimPlaybackParameter() {
+		if(animFps==0) {
 			numberOfImagesToSkip=0;
-			gifDelay=0;
+			animDelay=0;
 		}else {
-			gifDelay=(int)(1000.0/gifFps+0.5); 
-			setNumberOfImagesToSkip(1.0*imagesFps/gifFps);
+			animDelay=(int)(1000.0/animFps+0.5); 
+			setNumberOfImagesToSkip(1.0*imagesFps/animFps);
 		}
-		sendMessage(SimpleEvents.MODEL_GIFPLAYBACKVALUESCHANGED);
+		sendMessage(SimpleEvents.MODEL_ANIMPLAYBACKVALUESCHANGED);
 	}
-	
-	public void setGifDelay(int delay) {
-		if(this.gifDelay==delay) {
+
+	public void setAnimDelay(int delay) {
+		if(this.animDelay==delay) {
 			return;
 		}
 		if(delay<16) {
@@ -151,36 +171,36 @@ public class GanimedModel extends Observable{
 		if(delay>1000) {
 			delay=1000;
 		}
-		this.gifDelay=delay;
-		sendMessage(SimpleEvents.MODEL_GIFPLAYBACKVALUESCHANGED);
+		this.animDelay=delay;
+		sendMessage(SimpleEvents.MODEL_ANIMPLAYBACKVALUESCHANGED);
 	}
-	
-	public int getGifDelay() {
-		return gifDelay;
+
+	public int getAnimDelay() {
+		return animDelay;
 	}
-	
-	public void setGifEndDelay(int delay) {
-		if(this.gifEndDelay==delay) {
+
+	public void setAnimEndDelay(int delay) {
+		if(this.animEndDelay==delay) {
 			return;
 		}
 		if(delay<0) {
 			delay=0;
 		}
-		if(delay>gifEndDelayMaxMax) {
-			delay=gifEndDelayMaxMax;
+		if(delay>animEndDelayMaxMax) {
+			delay=animEndDelayMaxMax;
 		}
-		this.gifEndDelay=delay;
-		sendMessage(SimpleEvents.MODEL_GIFPLAYBACKVALUESCHANGED);
+		this.animEndDelay=delay;
+		sendMessage(SimpleEvents.MODEL_ANIMPLAYBACKVALUESCHANGED);
 	}
-	
-	public int getGifEndDelay() {
-		return gifEndDelay;
+
+	public int getAnimEndDelay() {
+		return animEndDelay;
 	}
-	
-	public int getGifEndDelayMax() {
-		return gifEndDelayMax;
+
+	public int getAnimEndDelayMax() {
+		return animEndDelayMax;
 	}
-	
+
 	public int getImageWidth() {
 		return imageWidth;
 	}
@@ -199,14 +219,14 @@ public class GanimedModel extends Observable{
 		}else {
 			this.cropLeft = cropLeft;
 		}
-		cropRightMin=cropLeft+MINIMUM_GIF_SIZE;
+		cropRightMin=cropLeft+MINIMUM_ANIM_SIZE;
 		sendMessage(SimpleEvents.MODEL_IMAGESIZECHANGED);
 	}
-	
+
 	public int getCropLeft() {
 		return cropLeft;
 	}
-	
+
 	public void setCropRight(int cropRight) {
 		if(cropRight==this.cropRight) {
 			return;
@@ -217,10 +237,10 @@ public class GanimedModel extends Observable{
 		}else {
 			this.cropRight = cropRight;
 		}
-		cropLeftMax=cropRight-MINIMUM_GIF_SIZE;
+		cropLeftMax=cropRight-MINIMUM_ANIM_SIZE;
 		sendMessage(SimpleEvents.MODEL_IMAGESIZECHANGED);
 	}
-	
+
 	public int getCropRight() {
 		return cropRight;
 	}
@@ -235,10 +255,10 @@ public class GanimedModel extends Observable{
 		}else {
 			this.cropTop = cropTop;
 		}
-		cropBottomMin=cropTop+MINIMUM_GIF_SIZE;
+		cropBottomMin=cropTop+MINIMUM_ANIM_SIZE;
 		sendMessage(SimpleEvents.MODEL_IMAGESIZECHANGED);
 	}
-	
+
 	public int getCropTop() {
 		return cropTop;
 	}
@@ -253,10 +273,10 @@ public class GanimedModel extends Observable{
 		}else {
 			this.cropBottom = cropBottom;
 		}
-		cropTopMax=cropBottom-MINIMUM_GIF_SIZE;
+		cropTopMax=cropBottom-MINIMUM_ANIM_SIZE;
 		sendMessage(SimpleEvents.MODEL_IMAGESIZECHANGED);
 	}
-	
+
 	public int getCropBottom() {
 		return cropBottom;
 	}
@@ -274,7 +294,7 @@ public class GanimedModel extends Observable{
 		this.resizePercent = resizePercent;
 		sendMessage(SimpleEvents.MODEL_IMAGESIZECHANGED);
 	}
-	
+
 	public int getResizePercent() {
 		return resizePercent;
 	}
@@ -284,13 +304,13 @@ public class GanimedModel extends Observable{
 			return;
 		}
 		this.numberOfImagesToSkip=number;
-		sendMessage(SimpleEvents.MODEL_GIFNUMBEROFIMAGESCHANGED);
+		sendMessage(SimpleEvents.MODEL_ANIMNUMBEROFIMAGESCHANGED);
 	}
-	
+
 	public double getNumberOfImagesToSkip() {
 		return numberOfImagesToSkip;
 	}
-	
+
 	public void setBufferedImages(BufferedImage[] bufferedImages) {
 		this.bufferedImages=bufferedImages;
 		if(bufferedImages!=null) {
@@ -298,24 +318,24 @@ public class GanimedModel extends Observable{
 			this.imageHeight=bufferedImages[0].getHeight();
 			cropLeft=0;
 			cropLeftMin=0;
-			cropLeftMax=this.imageWidth-MINIMUM_GIF_SIZE;
+			cropLeftMax=this.imageWidth-MINIMUM_ANIM_SIZE;
 			cropTop=0;
 			cropTopMin=0;
-			cropTopMax=this.imageHeight-MINIMUM_GIF_SIZE;
+			cropTopMax=this.imageHeight-MINIMUM_ANIM_SIZE;
 			cropRight=this.imageWidth;
-			cropRightMin=MINIMUM_GIF_SIZE;
+			cropRightMin=MINIMUM_ANIM_SIZE;
 			cropRightMax=this.imageWidth;
 			cropBottom=this.imageHeight;
 			cropBottomMin=0;
-			cropBottomMax=this.imageHeight-MINIMUM_GIF_SIZE;
+			cropBottomMax=this.imageHeight-MINIMUM_ANIM_SIZE;
 			resizePercent=100;
 			resizeMin=1;
 			resizeMax=101;
 			if(imagesFps==0) {
 				imagesFps=25;
 			}
-			if(gifFps==0) {
-				setGifFps(imagesFps>>1);
+			if(animFps==0) {
+				setAnimFps(imagesFps>>1);
 			}
 			sendMessage(SimpleEvents.MODEL_IMAGESCHANGED);
 		}
@@ -324,19 +344,19 @@ public class GanimedModel extends Observable{
 	public BufferedImage[] getBufferedImages() {
 		return bufferedImages;
 	}
-	
+
 	private void sendMessage(Object message) {
 		setChanged();
 		notifyObservers(message);
 	}
 
-	public byte[] getBytearrayGif() {
-		return bytearrayGif;
+	public byte[] getBytearrayAnim() {
+		return bytearrayAnim;
 	}
 
-	public void setBytearrayGif(byte[] bytearrayGif) {
-		this.bytearrayGif = bytearrayGif;
-		sendMessage(SimpleEvents.MODEL_GIFBYTEARRAYCHANGED);
+	public void setBytearrayAnim(byte[] bytearrayAnim) {
+		this.bytearrayAnim = bytearrayAnim;
+		sendMessage(SimpleEvents.MODEL_ANIMBYTEARRAYCHANGED);
 	}
 
 	public int getCropLeftMin() {
@@ -346,11 +366,11 @@ public class GanimedModel extends Observable{
 	public int getCropLeftMax() {
 		return cropLeftMax;
 	}
-	
+
 	public int getCropRightMin() {
 		return cropRightMin;
 	}
-	
+
 	public int getCropRightMax() {
 		return cropRightMax;
 	}
@@ -377,6 +397,14 @@ public class GanimedModel extends Observable{
 
 	public int getResizeMax() {
 		return resizeMax;
+	}
+
+	public ImageType getImageType() {
+		return imageType;
+	}
+
+	public void setImageType(ImageType imageType) {
+		this.imageType = imageType;
 	}
 
 	public static String determineProgramVersion() {
