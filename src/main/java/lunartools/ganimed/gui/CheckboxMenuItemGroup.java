@@ -43,4 +43,12 @@ public class CheckboxMenuItemGroup implements ItemListener{
 		}
 	}
 
+	public void imageTypeChanged() {
+		ImageType imageType=model.getImageType();
+		for(CheckboxMenuItem checkboxMenuItem:checkboxMenuItems){
+			ImageType imageTypeOfItem=imageTypes.get(checkboxMenuItem.getActionCommand());
+			checkboxMenuItem.setState(imageTypeOfItem==imageType);
+		}
+	}
+
 }

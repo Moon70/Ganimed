@@ -30,6 +30,10 @@ public class GanimedKeyListener implements KeyListener{
 				model.setCropTop(Integer.parseInt(view.textfieldCropTop.getText()));
 			}else if(event.getSource()==view.textfieldCropBottom) {
 				model.setCropBottom(Integer.parseInt(view.textfieldCropBottom.getText()));
+			}else if(event.getSource()==view.textfieldCutLeft) {
+				model.setCutLeft(Integer.parseInt(view.textfieldCutLeft.getText()));
+			}else if(event.getSource()==view.textfieldCutRight) {
+				model.setCutRight(Integer.parseInt(view.textfieldCutRight.getText()));
 			}else if(event.getSource()==view.textfieldCropLeft) {
 				model.setCropLeft(Integer.parseInt(view.textfieldCropLeft.getText()));
 			}else if(event.getSource()==view.textfieldCropRight) {

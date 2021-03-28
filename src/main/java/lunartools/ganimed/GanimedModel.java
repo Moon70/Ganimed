@@ -36,6 +36,12 @@ public class GanimedModel extends Observable{
 	private int imageWidth;
 	private int imageHeight;
 
+	private int cutLeft;
+	private int cutLeftMin;
+	private int cutLeftMax;
+	private int cutRight;
+	private int cutRightMin;
+	private int cutRightMax;
 	private int cropLeft;
 	private int cropLeftMin;
 	private int cropLeftMax;
@@ -52,7 +58,8 @@ public class GanimedModel extends Observable{
 	private int resizeMin;
 	private int resizeMax;
 	private static final int MINIMUM_ANIM_SIZE=16;
-
+	private static final int MINIMUM_ANIM_FRAMECOUNT=1;
+	
 	private BufferedImage[] bufferedImages;
 	private byte[] bytearrayAnim;
 	private static String versionProgram;
@@ -107,6 +114,16 @@ public class GanimedModel extends Observable{
 
 	public void setAnimFile(File file) {
 		this.fileAnim=file;
+		int p=file.getName().lastIndexOf('.');
+		if(p!=-1) {
+			String fileextension=file.getName().substring(p);
+			for(ImageType imageType:imageTypes) {
+				if(imageType.getFileExtension().equalsIgnoreCase(fileextension)) {
+					setImageType(imageType);
+					break;
+				}
+			}
+		}
 	}
 
 	public File getAnimFile() {
@@ -209,6 +226,42 @@ public class GanimedModel extends Observable{
 		return imageHeight;
 	}
 
+	public void setCutLeft(int cutLeft) {
+		if(cutLeft==this.cutLeft) {
+			return;
+		}else if(cutLeft<cutLeftMin) {
+			this.cutLeft = cutLeftMin;
+		}else if(cutLeft>cutLeftMax) {
+			this.cutLeft=cutLeftMax;
+		}else {
+			this.cutLeft = cutLeft;
+		}
+		cutRightMin=cutLeft+MINIMUM_ANIM_FRAMECOUNT;
+		sendMessage(SimpleEvents.MODEL_IMAGESIZECHANGED);
+	}
+	
+	public int getCutLeft() {
+		return cutLeft;
+	}
+
+	public void setCutRight(int cutRight) {
+		if(cutRight==this.cutRight) {
+			return;
+		}else if(cutRight<cutRightMin) {
+			this.cutRight = cutRightMin;
+		}else if(cutRight>cutRightMax) {
+			this.cutRight=cutRightMax;
+		}else {
+			this.cutRight = cutRight;
+		}
+		cutLeftMax=cutRight-MINIMUM_ANIM_FRAMECOUNT;
+		sendMessage(SimpleEvents.MODEL_IMAGESIZECHANGED);
+	}
+
+	public int getCutRight() {
+		return cutRight;
+	}
+	
 	public void setCropLeft(int cropLeft) {
 		if(cropLeft==this.cropLeft) {
 			return;
@@ -316,6 +369,12 @@ public class GanimedModel extends Observable{
 		if(bufferedImages!=null) {
 			this.imageWidth=bufferedImages[0].getWidth();
 			this.imageHeight=bufferedImages[0].getHeight();
+			cutLeft=1;
+			cutLeftMin=1;
+			cutLeftMax=bufferedImages.length-MINIMUM_ANIM_FRAMECOUNT;
+			cutRight=bufferedImages.length;
+			cutRightMin=1+MINIMUM_ANIM_FRAMECOUNT;
+			cutRightMax=bufferedImages.length;
 			cropLeft=0;
 			cropLeftMin=0;
 			cropLeftMax=this.imageWidth-MINIMUM_ANIM_SIZE;
@@ -357,6 +416,22 @@ public class GanimedModel extends Observable{
 	public void setBytearrayAnim(byte[] bytearrayAnim) {
 		this.bytearrayAnim = bytearrayAnim;
 		sendMessage(SimpleEvents.MODEL_ANIMBYTEARRAYCHANGED);
+	}
+
+	public int getCutLeftMin() {
+		return cutLeftMin;
+	}
+
+	public int getCutLeftMax() {
+		return cutLeftMax;
+	}
+
+	public int getCutRightMin() {
+		return cutRightMin;
+	}
+
+	public int getCutRightMax() {
+		return cutRightMax;
 	}
 
 	public int getCropLeftMin() {
@@ -404,7 +479,11 @@ public class GanimedModel extends Observable{
 	}
 
 	public void setImageType(ImageType imageType) {
+		if(this.imageType==imageType) {
+			return;
+		}
 		this.imageType = imageType;
+		sendMessage(SimpleEvents.MODEL_IMAGETYPECHANGED);
 	}
 
 	public static String determineProgramVersion() {

@@ -134,7 +134,7 @@ public class ImageService {
 		ImageType imageType=model.getImageType();
 		try {
 			Vector<Integer> vecIndexTable=new Vector<Integer>();
-			for(double index=0;(index+0.5)<model.getBufferedImages().length;index+=model.getNumberOfImagesToSkip()) {
+			for(double index=model.getCutLeft();(index+0.5)<model.getCutRight();index+=model.getNumberOfImagesToSkip()) {
 				vecIndexTable.add((int)(index+0.5));
 			}
 			if(showProgressBar) {

@@ -27,10 +27,14 @@ public class AnimationThread extends Thread{
 		long sleep;
 		Dimension lastResultImageSize=null;
 		Dimension resultImageSize;
-		int offsetY=240;
+		int offsetY=240+30;
+		int cutLeft;
+		int cutRight;
 		while(!shutdown){
 			timestamp=System.currentTimeMillis();
 			bufferedImages=model.getBufferedImages();
+			cutLeft=model.getCutLeft()-1;
+			cutRight=model.getCutRight()-1;
 			if(bufferedImages!=null) {
 				resultImageSize=imageService.getResultImageSize();
 				int offsetX=(view.getWidth()-resultImageSize.width)>>1;
@@ -44,8 +48,8 @@ public class AnimationThread extends Thread{
 				BufferedImage bufferedImage=imageService.getResultBufferedImage((int)index);
 				graphics.drawImage(bufferedImage,offsetX, offsetY,null);
 				index+=model.getNumberOfImagesToSkip();
-				if(index>=bufferedImages.length) {
-					index=0;
+				if(index>=cutRight) {
+					index=cutLeft;
 				}
 			}else {
 				index=0;

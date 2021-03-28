@@ -102,4 +102,8 @@ public class MenubarController implements ActionListener{
 		}
 	}
 
+	public void imageTypeChanged() {
+		checkboxMenuItemGroupImageType.imageTypeChanged();
+	}
+
 }

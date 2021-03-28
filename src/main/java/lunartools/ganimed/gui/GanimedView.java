@@ -36,6 +36,10 @@ public class GanimedView extends ObservableJFrame implements Observer{
 	protected Scrollbar scrollbarAnimFps;
 	protected Scrollbar scrollbarAnimDelay;
 	protected Scrollbar scrollbarAnimEndDelay;
+	protected JTextField textfieldCutLeft;
+	protected JTextField textfieldCutRight;
+	protected Scrollbar scrollbarCutLeft;
+	protected Scrollbar scrollbarCutRight;
 	protected JTextField textfieldCropLeft;
 	protected JTextField textfieldCropTop;
 	protected Scrollbar scrollbarCropLeft;
@@ -112,6 +116,34 @@ public class GanimedView extends ObservableJFrame implements Observer{
 		textfieldImagesFps.setBounds(xField2,y,32,lineHight);
 		textfieldImagesFps.addKeyListener(keyListener);
 		add(textfieldImagesFps);
+
+		y+=lineDistance2;
+		
+		label=new JLabel("Cut left:");
+		label.setBounds(xLabel1,y,100,lineHight);
+		add(label);
+		textfieldCutLeft=new JTextField(200);
+		textfieldCutLeft.setBounds(xField1,y,32,lineHight);
+		textfieldCutLeft.addKeyListener(keyListener);
+		add(textfieldCutLeft);
+		scrollbarCutLeft=new Scrollbar(Scrollbar.HORIZONTAL,0,1,0,0);
+		scrollbarCutLeft.setBounds(xScrollbar1,y+4,255+16+16,scrollHeight);
+		scrollbarCutLeft.setBackground(Color.DARK_GRAY);
+		scrollbarCutLeft.addAdjustmentListener(adjustmentlistener);
+		add(scrollbarCutLeft);
+
+		label=new JLabel("Cut right:");
+		label.setBounds(xLabel2,y,100,lineHight);
+		add(label);
+		textfieldCutRight=new JTextField(200);
+		textfieldCutRight.setBounds(xField2,y,32,lineHight);
+		textfieldCutRight.addKeyListener(keyListener);
+		add(textfieldCutRight);
+		scrollbarCutRight=new Scrollbar(Scrollbar.HORIZONTAL,0,1,0,0);
+		scrollbarCutRight.setBounds(xScrollbar2,y+4,255+16+16,scrollHeight);
+		scrollbarCutRight.setBackground(Color.DARK_GRAY);
+		scrollbarCutRight.addAdjustmentListener(adjustmentlistener);
+		add(scrollbarCutRight);
 
 		y+=lineDistance2;
 		
@@ -267,6 +299,8 @@ public class GanimedView extends ObservableJFrame implements Observer{
 				refreshAnimPlaybackValues();
 			}else if(object==SimpleEvents.MODEL_IMAGESIZECHANGED) {
 				refreshGui();
+			}else if(object.equals(SimpleEvents.MODEL_IMAGETYPECHANGED)) {
+				menubarController.imageTypeChanged();
 			}else if(object.equals(SimpleEvents.MODEL_IMAGESCHANGED)) {
 				menubarController.menuItem_SaveAs.setEnabled(true);
 				refreshGui();
@@ -277,7 +311,7 @@ public class GanimedView extends ObservableJFrame implements Observer{
 	
 	private void resizeFrame() {
 		int requiredWidth=model.getImageWidth()+20;
-		int requiredHeight=model.getImageHeight()+250;
+		int requiredHeight=model.getImageHeight()+250+30;
 		Rectangle rectangle=getBounds();
 		if(rectangle.width<requiredWidth) {
 			rectangle.width=requiredWidth;
@@ -303,6 +337,10 @@ public class GanimedView extends ObservableJFrame implements Observer{
 	private void refreshGui() {
 		if(model.getImageFolder()==null) {
 			textfieldImagesFps.setEnabled(false);
+			textfieldCutLeft.setEnabled(false);
+			scrollbarCutLeft.setEnabled(false);
+			textfieldCutRight.setEnabled(false);
+			scrollbarCutRight.setEnabled(false);
 			textfieldCropLeft.setEnabled(false);
 			scrollbarCropLeft.setEnabled(false);
 			textfieldCropRight.setEnabled(false);
@@ -323,6 +361,10 @@ public class GanimedView extends ObservableJFrame implements Observer{
 			setStatusInfo("READY, select an image folder");
 		}else {
 			textfieldImagesFps.setEnabled(true);
+			textfieldCutLeft.setEnabled(true);
+			scrollbarCutLeft.setEnabled(true);
+			textfieldCutRight.setEnabled(true);
+			scrollbarCutRight.setEnabled(true);
 			textfieldCropLeft.setEnabled(true);
 			scrollbarCropLeft.setEnabled(true);
 			textfieldCropRight.setEnabled(true);
@@ -341,6 +383,10 @@ public class GanimedView extends ObservableJFrame implements Observer{
 			scrollbarAnimEndDelay.setEnabled(true);
 			
 		}
+		scrollbarCutLeft.setMinimum(model.getCutLeftMin());
+		scrollbarCutLeft.setMaximum(model.getCutLeftMax()+1);
+		scrollbarCutRight.setMinimum(model.getCutRightMin());
+		scrollbarCutRight.setMaximum(model.getCutRightMax());
 		scrollbarCropLeft.setMinimum(model.getCropLeftMin());
 		scrollbarCropLeft.setMaximum(model.getCropLeftMax());
 		scrollbarCropTop.setMinimum(model.getCropTopMin());
@@ -354,6 +400,11 @@ public class GanimedView extends ObservableJFrame implements Observer{
 		scrollbarResize.setMinimum(model.getResizeMin());
 		scrollbarResize.setMaximum(model.getResizeMax());
 		
+		textfieldCutLeft.setText(""+model.getCutLeft());
+		scrollbarCutLeft.setValue(model.getCutLeft());
+		textfieldCutRight.setText(""+model.getCutRight());
+		scrollbarCutRight.setValue(model.getCutRight());
+
 		textfieldCropLeft.setText(""+model.getCropLeft());
 		scrollbarCropLeft.setValue(model.getCropLeft());
 		textfieldCropTop.setText(""+model.getCropTop());

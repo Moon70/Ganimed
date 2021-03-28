@@ -24,6 +24,10 @@ public class GanimedAdjustmentListener implements AdjustmentListener{
 			model.setAnimDelay(scrollbar.getValue());
 		}else if(scrollbar==view.scrollbarAnimEndDelay) {
 			model.setAnimEndDelay(scrollbar.getValue());
+		}else if(scrollbar==view.scrollbarCutLeft) {
+			model.setCutLeft(scrollbar.getValue());
+		}else if(scrollbar==view.scrollbarCutRight) {
+			model.setCutRight(scrollbar.getValue());
 		}else if(scrollbar==view.scrollbarCropLeft) {
 			model.setCropLeft(scrollbar.getValue());
 		}else if(scrollbar==view.scrollbarCropTop) {
