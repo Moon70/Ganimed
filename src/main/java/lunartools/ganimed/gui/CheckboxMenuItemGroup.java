@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import lunartools.ganimed.GanimedModel;
-import lunartools.ganimed.imagetype.ImageType;
+import lunartools.ganimed.panel.optionspanel.ImageType;
 
 public class CheckboxMenuItemGroup implements ItemListener{
 	private GanimedModel model;

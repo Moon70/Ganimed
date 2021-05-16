@@ -12,6 +12,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 import lunartools.FileTools;
+import lunartools.ImageTools;
 
 public class About {
 
@@ -36,7 +37,7 @@ public class About {
 			editorPane.setEditable(false);
 			editorPane.setBackground(jframe.getBackground());
 
-			JOptionPane.showMessageDialog(jframe, editorPane, "About Ganimed",JOptionPane.INFORMATION_MESSAGE,FileTools.createImageIcon("/icons/ProgramIcon.png",new About()));
+			JOptionPane.showMessageDialog(jframe, editorPane, "About Ganimed",JOptionPane.INFORMATION_MESSAGE,ImageTools.createImageIcon("/icons/ProgramIcon.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

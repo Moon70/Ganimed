@@ -15,20 +15,30 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
+import lunartools.colorquantizer.GPAC_experimental;
+
 public class GifAnimCreator implements AnimCreator{
+	private GanimedController controller;
 	private ByteArrayOutputStream baos;
 	private ImageOutputStream imageOutputStream;
 	private ImageWriter imageWriter;
 	private ImageWriteParam imageWriteParams;
 	private IIOMetadata iooMetadata;
 	private int delay;
-
-	public void addImage(BufferedImage bufferedImage, int delay, boolean loop) throws IOException {
+	private int progressStep;
+	
+	public GifAnimCreator(GanimedController controller) {
+		this.controller=controller;
+	}
+	
+	public void addImage(ImageData imageData, int delay, boolean loop) throws IOException {
+		controller.setProgressBarValue(progressStep++,"creating GIF...");
+		BufferedImage bufferedImage=imageData.getResultBufferedImage();
+		new GPAC_experimental().quantizeColors(bufferedImage,256);
 		if(iooMetadata==null) {
 			this.delay=delay;
 			baos=new ByteArrayOutputStream();
 			imageOutputStream = new MemoryCacheImageOutputStream(baos);
-
 			ImageTypeSpecifier imageTypeSpecifier = ImageTypeSpecifier.createFromBufferedImageType(bufferedImage.getType());
 			imageWriter = ImageIO.getImageWritersBySuffix("gif").next();
 			imageWriteParams = imageWriter.getDefaultWriteParam();

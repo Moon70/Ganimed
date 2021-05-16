@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
 import lunartools.ganimed.GanimedModel;
+import lunartools.ganimed.ImageData;
 import lunartools.ganimed.ImageService;
 
 public class AnimationThread extends Thread{
@@ -22,7 +23,7 @@ public class AnimationThread extends Thread{
 	@Override
 	public void run() {
 		double index=0;
-		BufferedImage[] bufferedImages;
+		ImageData[] bufferedImages;
 		long timestamp;
 		long sleep;
 		Dimension lastResultImageSize=null;
@@ -32,9 +33,9 @@ public class AnimationThread extends Thread{
 		int cutRight;
 		while(!shutdown){
 			timestamp=System.currentTimeMillis();
-			bufferedImages=model.getBufferedImages();
-			cutLeft=model.getCutLeft()-1;
-			cutRight=model.getCutRight()-1;
+			bufferedImages=model.getImageDataArray();
+			cutLeft=model.getEditorModel().getCutLeft()-1;
+			cutRight=model.getEditorModel().getCutRight()-1;
 			if(bufferedImages!=null) {
 				resultImageSize=imageService.getResultImageSize();
 				int offsetX=(view.getWidth()-resultImageSize.width)>>1;
@@ -60,9 +61,9 @@ public class AnimationThread extends Thread{
 				}
 			}
 			try {
-				sleep=timestamp-System.currentTimeMillis()+model.getAnimDelay();
+				sleep=timestamp-System.currentTimeMillis()+model.getEditorModel().getAnimDelay();
 				if(index==0) {
-					sleep+=model.getAnimEndDelay();
+					sleep+=model.getEditorModel().getAnimEndDelay();
 				}
 				if(sleep>0) {
 					Thread.sleep(sleep);

@@ -17,45 +17,60 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 
-import abyss.lunarengine.tools.ObservableJFrame;
-import lunartools.FileTools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import lunartools.ImageTools;
+import lunartools.ObservableJFrame;
 import lunartools.ScreenTools;
+import lunartools.ganimed.GanimedController;
 import lunartools.ganimed.GanimedModel;
-import lunartools.ganimed.imagetype.ImageType;
+import lunartools.ganimed.gui.editor.EditorView;
+import lunartools.ganimed.gui.loader.LoaderView;
+import lunartools.ganimed.panel.optionspanel.ImageType;
+import lunartools.ganimed.panel.optionspanel.OptionsPanel;
+import lunartools.ganimed.panel.selectionpanel.SelectionPanel;
 
 public class GanimedView extends ObservableJFrame implements Observer{
-	protected JTextField textfieldFolderpath;
-	protected JTextField textfieldImagesFps;
-	protected JTextField textfieldAnimFps;
-	protected JTextField textfieldAnimDelay;
-	protected JTextField textfieldAnimEndDelay;
-	protected Scrollbar scrollbarAnimFps;
-	protected Scrollbar scrollbarAnimDelay;
-	protected Scrollbar scrollbarAnimEndDelay;
-	protected JTextField textfieldCutLeft;
-	protected JTextField textfieldCutRight;
-	protected Scrollbar scrollbarCutLeft;
-	protected Scrollbar scrollbarCutRight;
-	protected JTextField textfieldCropLeft;
-	protected JTextField textfieldCropTop;
-	protected Scrollbar scrollbarCropLeft;
-	protected Scrollbar scrollbarCropTop;
-	protected JTextField textfieldCropRight;
-	protected JTextField textfieldCropBottom;
-	protected Scrollbar scrollbarCropRight;
-	protected Scrollbar scrollbarCropBottom;
-	protected JTextField textfieldResize;
-	protected Scrollbar scrollbarResize;
+	private static Logger logger = LoggerFactory.getLogger(GanimedView.class);
+	private SelectionPanel jPanelSelect;
+	private EditorView jPanelEditor;
+	private OptionsPanel jPanelOptions;
+//	protected JTextField textfieldFolderpath;
+//	protected JButton button;
+//	protected JTextField textfieldImagesFps;
+//	protected JTextField textfieldCutLeft;
+//	protected Scrollbar scrollbarCutLeft;
+//	protected JTextField textfieldCutRight;
+//	protected Scrollbar scrollbarCutRight;
+//	protected JTextField textfieldCropTop;
+//	protected Scrollbar scrollbarCropTop;
+//	protected JTextField textfieldCropBottom;
+//	protected Scrollbar scrollbarCropBottom;
+//	protected JTextField textfieldCropLeft;
+//	protected Scrollbar scrollbarCropLeft;
+//	protected JTextField textfieldCropRight;
+//	protected Scrollbar scrollbarCropRight;
+//	protected JTextField textfieldResize;
+//	protected Scrollbar scrollbarResize;
+//	protected JTextField textfieldAnimFps;
+//	protected Scrollbar scrollbarAnimFps;
+//	protected JTextField textfieldAnimDelay;
+//	protected Scrollbar scrollbarAnimDelay;
+//	protected JTextField textfieldAnimEndDelay;
+//	protected Scrollbar scrollbarAnimEndDelay;
 	private JLabel labelStatus;
 	private JProgressBar progressBar;
-	protected JButton button;
 	
 	public static final double SECTIOAUREA=1.6180339887;
-	public static final int WINDOW_MINIMUM_WIDTH=860;
+	private static final int tabWidth=100;
+	public static final int WINDOW_MINIMUM_WIDTH=860+tabWidth;
 	public static final int WINDOW_MINIMUM_HEIGHT=(int)(WINDOW_MINIMUM_WIDTH/SECTIOAUREA);
 	
 	private GanimedModel model;
@@ -69,6 +84,8 @@ public class GanimedView extends ObservableJFrame implements Observer{
 		setResizable(true);
 		this.model=gameModel;
 		this.model.addObserver(this);
+		this.model.getLoaderModel().addObserver(this);
+		this.model.getEditorModel().addObserver(this);
 		
 		this.setLayout(null);
 		
@@ -78,192 +95,36 @@ public class GanimedView extends ObservableJFrame implements Observer{
 			}
 		});
 		
-		KeyListener keyListener=new GanimedKeyListener(model,this);
-		AdjustmentListener adjustmentlistener=new GanimedAdjustmentListener(model, this);
+		jPanelSelect=new SelectionPanel(model,this);
+		jPanelEditor=new EditorView(model,this);
+		jPanelOptions=new OptionsPanel(model,this);
 		
+		JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);
+		tabs.setSize(jPanelEditor.getWidth()+tabWidth,jPanelEditor.getHeight());
+		//add(jPanelEditor);
+		
+		tabs.addTab("Select images", jPanelSelect);
+		tabs.addTab("Editor", jPanelEditor);
+        tabs.addTab("Options", jPanelOptions);
+//		add(tabs);
+        getContentPane().add(tabs);
+	
+//		KeyListener keyListener=new GanimedKeyListener(model,this);
+//		AdjustmentListener adjustmentlistener=new GanimedAdjustmentListener(model, this);
+//		
 		int xLabel1=12;
 		int xField1=90;
 		int xScrollbar1=120;
 		int xLabel2=440;
 		int xField2=440+78;
 		int xScrollbar2=470+78;
-		int y=0;
+		int y=178;
 		int scrollHeight=14;
 		int lineHight=18;
 		int lineDistance=22;
 		int lineDistance2=30;
 		
-		JLabel label=new JLabel("Image folder:");
-		label.setBounds(xLabel1,y,100,lineHight);
-		add(label);
-
-		textfieldFolderpath=new JTextField(200);
-		textfieldFolderpath.setBounds(xField1,y,300,lineHight);
-		textfieldFolderpath.addKeyListener(keyListener);
-		add(textfieldFolderpath);
-		button=new JButton();
-		button.setBounds(xField1+300+0, y, 16, lineHight);
-		button.setIcon(FileTools.createImageIcon("/icons/Open16.gif",this));
-		button.setBorder(null);
-		button.setContentAreaFilled(false);
-		button.addActionListener(new GanimedViewActionListener(this));
-		add(button);
-
-		label=new JLabel("Images FPS:");
-		label.setBounds(xLabel2,y,100,lineHight);
-		add(label);
-		textfieldImagesFps=new JTextField(200);
-		textfieldImagesFps.setBounds(xField2,y,32,lineHight);
-		textfieldImagesFps.addKeyListener(keyListener);
-		add(textfieldImagesFps);
-
-		y+=lineDistance2;
-		
-		label=new JLabel("Cut left:");
-		label.setBounds(xLabel1,y,100,lineHight);
-		add(label);
-		textfieldCutLeft=new JTextField(200);
-		textfieldCutLeft.setBounds(xField1,y,32,lineHight);
-		textfieldCutLeft.addKeyListener(keyListener);
-		add(textfieldCutLeft);
-		scrollbarCutLeft=new Scrollbar(Scrollbar.HORIZONTAL,0,1,0,0);
-		scrollbarCutLeft.setBounds(xScrollbar1,y+4,255+16+16,scrollHeight);
-		scrollbarCutLeft.setBackground(Color.DARK_GRAY);
-		scrollbarCutLeft.addAdjustmentListener(adjustmentlistener);
-		add(scrollbarCutLeft);
-
-		label=new JLabel("Cut right:");
-		label.setBounds(xLabel2,y,100,lineHight);
-		add(label);
-		textfieldCutRight=new JTextField(200);
-		textfieldCutRight.setBounds(xField2,y,32,lineHight);
-		textfieldCutRight.addKeyListener(keyListener);
-		add(textfieldCutRight);
-		scrollbarCutRight=new Scrollbar(Scrollbar.HORIZONTAL,0,1,0,0);
-		scrollbarCutRight.setBounds(xScrollbar2,y+4,255+16+16,scrollHeight);
-		scrollbarCutRight.setBackground(Color.DARK_GRAY);
-		scrollbarCutRight.addAdjustmentListener(adjustmentlistener);
-		add(scrollbarCutRight);
-
-		y+=lineDistance2;
-		
-		label=new JLabel("Crop top:");
-		label.setBounds(xLabel1,y,100,lineHight);
-		add(label);
-		textfieldCropTop=new JTextField(200);
-		textfieldCropTop.setBounds(xField1,y,32,lineHight);
-		textfieldCropTop.addKeyListener(keyListener);
-		add(textfieldCropTop);
-		scrollbarCropTop=new Scrollbar(Scrollbar.HORIZONTAL,0,1,0,0);
-		scrollbarCropTop.setBounds(xScrollbar1,y+4,255+16+16,scrollHeight);
-		scrollbarCropTop.setBackground(Color.DARK_GRAY);
-		scrollbarCropTop.addAdjustmentListener(adjustmentlistener);
-		add(scrollbarCropTop);
-
-		label=new JLabel("Crop bottom:");
-		label.setBounds(xLabel2,y,100,lineHight);
-		add(label);
-		textfieldCropBottom=new JTextField(200);
-		textfieldCropBottom.setBounds(xField2,y,32,lineHight);
-		textfieldCropBottom.addKeyListener(keyListener);
-		add(textfieldCropBottom);
-		scrollbarCropBottom=new Scrollbar(Scrollbar.HORIZONTAL,0,1,0,0);
-		scrollbarCropBottom.setBounds(xScrollbar2,y+4,255+16+16,scrollHeight);
-		scrollbarCropBottom.setBackground(Color.DARK_GRAY);
-		scrollbarCropBottom.addAdjustmentListener(adjustmentlistener);
-		add(scrollbarCropBottom);
-
-		y+=lineDistance;
-		
-		label=new JLabel("Crop left:");
-		label.setBounds(xLabel1,y,100,lineHight);
-		add(label);
-		textfieldCropLeft=new JTextField(200);
-		textfieldCropLeft.setBounds(xField1,y,32,lineHight);
-		textfieldCropLeft.addKeyListener(keyListener);
-		add(textfieldCropLeft);
-		scrollbarCropLeft=new Scrollbar(Scrollbar.HORIZONTAL,0,1,0,0);
-		scrollbarCropLeft.setBounds(xScrollbar1,y+4,255+16+16,scrollHeight);
-		scrollbarCropLeft.setBackground(Color.DARK_GRAY);
-		scrollbarCropLeft.addAdjustmentListener(adjustmentlistener);
-		add(scrollbarCropLeft);
-
-		label=new JLabel("Crop right:");
-		label.setBounds(xLabel2,y,100,lineHight);
-		add(label);
-		textfieldCropRight=new JTextField(200);
-		textfieldCropRight.setBounds(xField2,y,32,lineHight);
-		textfieldCropRight.addKeyListener(keyListener);
-		add(textfieldCropRight);
-		scrollbarCropRight=new Scrollbar(Scrollbar.HORIZONTAL,0,1,0,0);
-		scrollbarCropRight.setBounds(xScrollbar2,y+4,255+16+16,scrollHeight);
-		scrollbarCropRight.setBackground(Color.DARK_GRAY);
-		scrollbarCropRight.addAdjustmentListener(adjustmentlistener);
-		add(scrollbarCropRight);
-
-		y+=lineDistance;
-		
-		label=new JLabel("Resize %:");
-		label.setBounds(xLabel1,y,100,lineHight);
-		add(label);
-		textfieldResize=new JTextField(200);
-		textfieldResize.setBounds(xField1,y,32,lineHight);
-		textfieldResize.addKeyListener(keyListener);
-		add(textfieldResize);
-		scrollbarResize=new Scrollbar(Scrollbar.HORIZONTAL,0,1,0,0);
-		scrollbarResize.setBounds(xScrollbar1,y+4,255+16+16,scrollHeight);
-		scrollbarResize.setBackground(Color.DARK_GRAY);
-		scrollbarResize.addAdjustmentListener(adjustmentlistener);
-		add(scrollbarResize);
-
-		y+=lineDistance2;
-		
-		label=new JLabel("Anim FPS:");
-		label.setBounds(xLabel1,y,100,lineHight);
-		add(label);
-		textfieldAnimFps=new JTextField(200);
-		textfieldAnimFps.setBounds(xField1,y,32,lineHight);
-		textfieldAnimFps.addKeyListener(keyListener);
-		add(textfieldAnimFps);
-		scrollbarAnimFps=new Scrollbar(Scrollbar.HORIZONTAL,model.getAnimFps(),1,1,0);
-		scrollbarAnimFps.setBounds(xScrollbar1,y+4,255+16+16,scrollHeight);
-		scrollbarAnimFps.setBackground(Color.DARK_GRAY);
-		scrollbarAnimFps.setForeground(Color.BLUE);
-		scrollbarAnimFps.addAdjustmentListener(adjustmentlistener);
-		add(scrollbarAnimFps);
-
-		label=new JLabel("Anim delay:");
-		label.setBounds(xLabel2,y,100,lineHight);
-		add(label);
-		textfieldAnimDelay=new JTextField(4);
-		textfieldAnimDelay.setBounds(xField2,y,32,lineHight);
-		textfieldAnimDelay.setText(""+model.getAnimDelay());
-		textfieldAnimDelay.addKeyListener(keyListener);
-		add(textfieldAnimDelay);
-		scrollbarAnimDelay=new Scrollbar(Scrollbar.HORIZONTAL,model.getAnimDelay(),1,16,1001);
-		scrollbarAnimDelay.setBounds(xScrollbar2,y+4,255+16+16,scrollHeight);
-		scrollbarAnimDelay.setBackground(Color.DARK_GRAY);
-		scrollbarAnimDelay.addAdjustmentListener(adjustmentlistener);
-		add(scrollbarAnimDelay);
-
-		y+=lineDistance;
-		
-		label=new JLabel("End delay:");
-		label.setBounds(xLabel1,y,100,lineHight);
-		add(label);
-		textfieldAnimEndDelay=new JTextField(4);
-		textfieldAnimEndDelay.setBounds(xField1,y,32,lineHight);
-		textfieldAnimEndDelay.addKeyListener(keyListener);
-		add(textfieldAnimEndDelay);
-		scrollbarAnimEndDelay=new Scrollbar(Scrollbar.HORIZONTAL,model.getAnimEndDelay(),1,0,5001);
-		scrollbarAnimEndDelay.setBounds(xScrollbar1,y+4,255+16+16,scrollHeight);
-		scrollbarAnimEndDelay.setBackground(Color.DARK_GRAY);
-		scrollbarAnimEndDelay.addAdjustmentListener(adjustmentlistener);
-		add(scrollbarAnimEndDelay);
-
-		y+=lineDistance;
-		
-		label=new JLabel("Status:");
+		JLabel label=new JLabel("Status:");
 		label.setBounds(xLabel1,y,100,lineHight);
 		add(label);
 		labelStatus=new JLabel();
@@ -284,7 +145,7 @@ public class GanimedView extends ObservableJFrame implements Observer{
 		setMenuBar(this.menubarController.createMenubar());
 
 		try {
-			this.setIconImage(FileTools.createImage("/icons/ProgramIcon.png",this));
+			this.setIconImage(ImageTools.createImage("/icons/ProgramIcon.png"));
 		} catch (IOException e) {
 			System.err.println("error loading frame icon");
 			e.printStackTrace();
@@ -294,18 +155,23 @@ public class GanimedView extends ObservableJFrame implements Observer{
 
 	@Override
 	public void update(Observable observable,Object object){
-		if(observable instanceof GanimedModel) {
+//		if(observable instanceof GanimedModel) {
 			if(object==SimpleEvents.MODEL_ANIMPLAYBACKVALUESCHANGED) {
-				refreshAnimPlaybackValues();
+//				refreshAnimPlaybackValues();
+				refreshGui();
 			}else if(object==SimpleEvents.MODEL_IMAGESIZECHANGED) {
 				refreshGui();
 			}else if(object.equals(SimpleEvents.MODEL_IMAGETYPECHANGED)) {
 				menubarController.imageTypeChanged();
+				jPanelOptions.refreshGui();
 			}else if(object.equals(SimpleEvents.MODEL_IMAGESCHANGED)) {
 				menubarController.menuItem_SaveAs.setEnabled(true);
 				refreshGui();
 				resizeFrame();
-			}
+	//		}
+		}else if(object.equals(SimpleEvents.MODEL_REFRESH_SELECTION_GUI)) {
+			logger.trace("received: "+SimpleEvents.MODEL_REFRESH_SELECTION_GUI);
+			refreshSelectionGui();
 		}
 	}
 	
@@ -322,100 +188,16 @@ public class GanimedView extends ObservableJFrame implements Observer{
 		setBounds(ScreenTools.getInstance().optimizeBounds(getBounds(),rectangle));
 	}
 	
-	private void refreshAnimPlaybackValues() {
-		textfieldImagesFps.setText(""+model.getImagesFps());
-		textfieldAnimFps.setText(""+model.getAnimFps());
-		scrollbarAnimFps.setMaximum(model.getAnimFpsMax());
-		scrollbarAnimFps.setValue(model.getAnimFps());
-		textfieldAnimDelay.setText(""+model.getAnimDelay());
-		scrollbarAnimDelay.setValue(model.getAnimDelay());
-		textfieldAnimEndDelay.setText(""+model.getAnimEndDelay());
-		scrollbarAnimEndDelay.setMaximum(model.getAnimEndDelayMax());
-		scrollbarAnimEndDelay.setValue(model.getAnimEndDelay());
+	private void refreshGui() {
+		jPanelSelect.refreshGui();
+		jPanelEditor.refreshGui();
+		jPanelOptions.refreshGui();
+		clearStatus();
 	}
 	
-	private void refreshGui() {
-		if(model.getImageFolder()==null) {
-			textfieldImagesFps.setEnabled(false);
-			textfieldCutLeft.setEnabled(false);
-			scrollbarCutLeft.setEnabled(false);
-			textfieldCutRight.setEnabled(false);
-			scrollbarCutRight.setEnabled(false);
-			textfieldCropLeft.setEnabled(false);
-			scrollbarCropLeft.setEnabled(false);
-			textfieldCropRight.setEnabled(false);
-			scrollbarCropRight.setEnabled(false);
-			textfieldCropTop.setEnabled(false);
-			scrollbarCropTop.setEnabled(false);
-			textfieldCropBottom.setEnabled(false);
-			scrollbarCropBottom.setEnabled(false);
-			textfieldResize.setEnabled(false);
-			scrollbarResize.setEnabled(false);
-			textfieldAnimFps.setEnabled(false);
-			scrollbarAnimFps.setEnabled(false);
-			textfieldAnimDelay.setEnabled(false);
-			scrollbarAnimDelay.setEnabled(false);
-			textfieldAnimEndDelay.setEnabled(false);
-			scrollbarAnimEndDelay.setEnabled(false);
-			
-			setStatusInfo("READY, select an image folder");
-		}else {
-			textfieldImagesFps.setEnabled(true);
-			textfieldCutLeft.setEnabled(true);
-			scrollbarCutLeft.setEnabled(true);
-			textfieldCutRight.setEnabled(true);
-			scrollbarCutRight.setEnabled(true);
-			textfieldCropLeft.setEnabled(true);
-			scrollbarCropLeft.setEnabled(true);
-			textfieldCropRight.setEnabled(true);
-			scrollbarCropRight.setEnabled(true);
-			textfieldCropTop.setEnabled(true);
-			scrollbarCropTop.setEnabled(true);
-			textfieldCropBottom.setEnabled(true);
-			scrollbarCropBottom.setEnabled(true);
-			textfieldResize.setEnabled(true);
-			scrollbarResize.setEnabled(true);
-			textfieldAnimFps.setEnabled(true);
-			scrollbarAnimFps.setEnabled(true);
-			textfieldAnimDelay.setEnabled(true);
-			scrollbarAnimDelay.setEnabled(true);
-			textfieldAnimEndDelay.setEnabled(true);
-			scrollbarAnimEndDelay.setEnabled(true);
-			
-		}
-		scrollbarCutLeft.setMinimum(model.getCutLeftMin());
-		scrollbarCutLeft.setMaximum(model.getCutLeftMax()+1);
-		scrollbarCutRight.setMinimum(model.getCutRightMin());
-		scrollbarCutRight.setMaximum(model.getCutRightMax());
-		scrollbarCropLeft.setMinimum(model.getCropLeftMin());
-		scrollbarCropLeft.setMaximum(model.getCropLeftMax());
-		scrollbarCropTop.setMinimum(model.getCropTopMin());
-		scrollbarCropTop.setMaximum(model.getCropTopMax());
-		
-		scrollbarCropRight.setMinimum(model.getCropRightMin());
-		scrollbarCropRight.setMaximum(model.getCropRightMax());
-		scrollbarCropBottom.setMinimum(model.getCropBottomMin());
-		scrollbarCropBottom.setMaximum(model.getCropBottomMax());
-		
-		scrollbarResize.setMinimum(model.getResizeMin());
-		scrollbarResize.setMaximum(model.getResizeMax());
-		
-		textfieldCutLeft.setText(""+model.getCutLeft());
-		scrollbarCutLeft.setValue(model.getCutLeft());
-		textfieldCutRight.setText(""+model.getCutRight());
-		scrollbarCutRight.setValue(model.getCutRight());
-
-		textfieldCropLeft.setText(""+model.getCropLeft());
-		scrollbarCropLeft.setValue(model.getCropLeft());
-		textfieldCropTop.setText(""+model.getCropTop());
-		scrollbarCropTop.setValue(model.getCropTop());
-		textfieldCropRight.setText(""+model.getCropRight());
-		scrollbarCropRight.setValue(model.getCropRight());
-		textfieldCropBottom.setText(""+model.getCropBottom());
-		scrollbarCropBottom.setValue(model.getCropBottom());
-		textfieldResize.setText(""+model.getResizePercent());
-		scrollbarResize.setValue(model.getResizePercent());
-
+	private void refreshSelectionGui() {
+		jPanelSelect.refreshGui();
+		clearStatus();
 	}
 	
 	public void sendMessage(Object message) {
@@ -425,28 +207,6 @@ public class GanimedView extends ObservableJFrame implements Observer{
 
 	public void showMessageboxAbout(){
 		About.showAboutDialog(this);
-	}
-	
-	public void selectImageFolder() {
-		final JFileChooser fileChooser= new JFileChooser() {
-			 public void updateUI() {
-                 putClientProperty("FileChooser.useShellFolder", Boolean.FALSE);
-                 super.updateUI();
-             }
-		};
-		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		if(model.getImageFolder()!=null) {
-			fileChooser.setCurrentDirectory(model.getImageFolder());
-		}else {
-			fileChooser.setCurrentDirectory(model.getLastImageFolder());
-		}
-		if(fileChooser.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
-			File file=fileChooser.getSelectedFile();
-			textfieldFolderpath.setText(file.getAbsolutePath());
-			selectedImageFolder(file);
-		}else {
-			setStatusInfo("folder selection canceled");
-		}
 	}
 	
 	public void saveAs() {
@@ -488,14 +248,11 @@ public class GanimedView extends ObservableJFrame implements Observer{
 		}
 	}
 
-	protected void selectedImageFolder(File file) {
-		if(file.exists()) {
-			model.setImageFolder(file);
-		}else {
-			setStatusError("Folder does not exist: "+file.getAbsolutePath());
-		}
+	public void clearStatus() {
+		labelStatus.setText("ready");
+		labelStatus.setForeground(Color.BLUE);
 	}
-	
+
 	public void setStatusInfo(String message) {
 		labelStatus.setText(message);
 		labelStatus.setForeground(Color.BLUE);
@@ -526,6 +283,18 @@ public class GanimedView extends ObservableJFrame implements Observer{
 	public void disableProgressBar() {
 		labelStatus.setVisible(true);
 		progressBar.setVisible(false);
+	}
+
+	public SelectionPanel getjPanelSelect() {
+		return jPanelSelect;
+	}
+
+	public EditorView getjPanelEditor() {
+		return jPanelEditor;
+	}
+
+	public OptionsPanel getjPanelOptions() {
+		return jPanelOptions;
 	}
 	
 }

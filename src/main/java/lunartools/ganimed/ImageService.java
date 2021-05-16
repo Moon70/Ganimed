@@ -9,13 +9,15 @@ import java.util.Vector;
 
 import javax.imageio.ImageIO;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import lunartools.FileTools;
 import lunartools.colorquantizer.GPAC_experimental;
-import lunartools.ganimed.imagetype.ImageType;
-import lunartools.ganimed.imagetype.ImageTypeApng;
-import lunartools.ganimed.imagetype.ImageTypeGif;
+import lunartools.ganimed.panel.optionspanel.ImageType;
 
 public class ImageService {
+	private static Logger logger = LoggerFactory.getLogger(ImageService.class);
 	private GanimedModel model;
 	private GanimedController controller;
 	private volatile Thread processImageFolderThread;
@@ -27,9 +29,9 @@ public class ImageService {
 	}
 
 	public Dimension getResultImageSize() {
-		int width=model.getCropRight()-model.getCropLeft();
-		int height=model.getCropBottom()-model.getCropTop();
-		int resizePercent=model.getResizePercent();
+		int width=model.getEditorModel().getCropRight()-model.getEditorModel().getCropLeft();
+		int height=model.getEditorModel().getCropBottom()-model.getEditorModel().getCropTop();
+		int resizePercent=model.getEditorModel().getResizePercent();
 		if(resizePercent!=100) {
 			width=width*resizePercent/100;
 			height=height*resizePercent/100;
@@ -37,15 +39,16 @@ public class ImageService {
 		return new Dimension(width,height);
 	}
 
-	public BufferedImage getResultBufferedImage(int index) {
+	@Deprecated
+	public BufferedImage getResultBufferedImage(int index){
 		Dimension resultImageSize=getResultImageSize();
 		BufferedImage bufferedImage=new BufferedImage(resultImageSize.width,resultImageSize.height,BufferedImage.TYPE_INT_RGB);
 		Graphics graphicsImage=bufferedImage.getGraphics();
-		graphicsImage.drawImage(model.getBufferedImages()[index],
+		graphicsImage.drawImage(model.getImageDataArray()[index].getBufferedImage(),
 				0, 0,
 				resultImageSize.width,resultImageSize.height,
-				model.getCropLeft(), model.getCropTop(),
-				model.getCropRight(),model.getCropBottom(),
+				model.getEditorModel().getCropLeft(), model.getEditorModel().getCropTop(),
+				model.getEditorModel().getCropRight(),model.getEditorModel().getCropBottom(),
 				null);
 		return bufferedImage;
 	}
@@ -56,33 +59,30 @@ public class ImageService {
 		}
 		processImageFolderThread=new Thread() {
 			public void run() {
-				model.setBufferedImages(null);
-				File fileFolder=model.getImageFolder();
+				model.setImageData(null);
+				File fileFolder=model.getLoaderModel().getImageFolder();
 				File[] files=FileTools.listFilesSorted(fileFolder);
 				controller.enableProgressBar(files.length);
-				BufferedImage[] bufferedImages=new BufferedImage[files.length];
-				int imageWidth=0;
-				int imageHeight=0;
+				AnimationData animationData=new AnimationData(model);
 				for(int i=0;i<files.length;i++) {
 					if(isInterrupted() || controller.isShutdownInProgress()) {
 						return;
 					}
 					controller.setProgressBarValue(i,"Reading: "+files[i]);
 					try {
-						bufferedImages[i]=ImageIO.read(files[i]);
-						if(imageWidth<bufferedImages[i].getWidth()) {
-							imageWidth=bufferedImages[i].getWidth();
-						}
-						if(imageHeight<bufferedImages[i].getHeight()) {
-							imageHeight=bufferedImages[i].getHeight();
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
+						animationData.addFile(files[i]);
+					} catch (Exception e) {
+						logger.error(e.getMessage(),e);
+						controller.setStatusError(e.getMessage());
+						controller.disableProgressBar();
+						return;
+//					} catch (IOException e) {
+//						e.printStackTrace();
 					}
 				}
 				controller.disableProgressBar();
 				controller.setStatusInfo("READY, "+files.length+" files processed");
-				model.setBufferedImages(bufferedImages);
+				model.setImageData(animationData);
 			};
 		};
 		processImageFolderThread.start();
@@ -134,43 +134,45 @@ public class ImageService {
 		ImageType imageType=model.getImageType();
 		try {
 			Vector<Integer> vecIndexTable=new Vector<Integer>();
-			for(double index=model.getCutLeft();(index+0.5)<model.getCutRight();index+=model.getNumberOfImagesToSkip()) {
+			for(double index=model.getEditorModel().getCutLeft();(index+0.5)<model.getEditorModel().getCutRight();index+=model.getNumberOfImagesToSkip()) {
 				vecIndexTable.add((int)(index+0.5));
 			}
 			if(showProgressBar) {
 				controller.enableProgressBar(vecIndexTable.size());
 			}
 			AnimCreator animCreator;
-			if(imageType instanceof ImageTypeGif) {
-				animCreator=new GifAnimCreator();
-			}else if(model.getImageType() instanceof ImageTypeApng) {
-				animCreator=new PngAnimCreator();
+			if(imageType==ImageType.GIF) {
+				animCreator=new GifAnimCreator(controller);
+			}else if(imageType==ImageType.PNG) {
+				animCreator=new PngAnimCreator(model.getOptionsPngModel(),controller);
 			}else {
 				throw new RuntimeException("unknown image type: "+model.getImageType());
 			}
 			for(int i=0;i<vecIndexTable.size();i++) {
-				if(showProgressBar) {
-					controller.setProgressBarValue(i,"creating "+imageType.getName()+"...");
-				}
 				if(Thread.interrupted() || controller.isShutdownInProgress()) {
 					return null;
 				}
-				BufferedImage bufferedImage=getResultBufferedImage(vecIndexTable.get(i));
-				new GPAC_experimental().quantizeColors(bufferedImage,256);
+				//BufferedImage bufferedImage=getResultBufferedImage(vecIndexTable.get(i));
+				ImageData imageData=model.getAnimationData().getImageData(vecIndexTable.get(i));
+//				if(imageType instanceof ImageTypeGif) {
+//					new GPAC_experimental().quantizeColors(bufferedImage,256);
+//				}
 				if(i<vecIndexTable.size()-1) {
-					animCreator.addImage(bufferedImage, model.getAnimDelay(), false);
+					animCreator.addImage(imageData, model.getEditorModel().getAnimDelay(), false);
 				}else {
-					animCreator.addImage(bufferedImage, model.getAnimEndDelay(), false);
+					int endDelay=model.getEditorModel().getAnimEndDelay();
+					animCreator.addImage(imageData, endDelay>0?endDelay:model.getEditorModel().getAnimDelay(), false);
 				}
 				if(Thread.currentThread().isInterrupted()) {
 					controller.disableProgressBar();
 					return null;
 				}
 			}
+			byte[] anim=animCreator.toByteArray();
 			if(showProgressBar) {
 				controller.disableProgressBar();
 			}
-			return animCreator.toByteArray();
+			return anim;
 		} catch (Exception e) {
 			controller.setStatusError("Error creating "+imageType.getName()+": "+e.getMessage());
 			e.printStackTrace();

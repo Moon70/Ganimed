@@ -8,7 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import lunartools.ganimed.GanimedModel;
-import lunartools.ganimed.imagetype.ImageType;
+import lunartools.ganimed.panel.optionspanel.ImageType;
 
 public class MenubarController implements ActionListener{
 	private static final String ACTIONCOMMAND_SELECTFOLDER = "selectfolder";
@@ -94,7 +94,7 @@ public class MenubarController implements ActionListener{
 		if(actionCommand.equals(ACTIONCOMMAND_EXIT)){
 			view.sendMessage(SimpleEvents.EXIT);
 		}else if(actionCommand.equals(ACTIONCOMMAND_SELECTFOLDER)){
-			view.selectImageFolder();
+			view.getjPanelSelect().getLoaderView().selectImageFolder();
 		}else if(actionCommand.equals(ACTIONCOMMAND_SAVEAS)){
 			view.saveAs();
 		}else if(actionCommand.equals(ACTIONCOMMAND_ABOUT)){

@@ -6,12 +6,16 @@ import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import lunartools.Settings;
 import lunartools.ganimed.gui.AnimationThread;
 import lunartools.ganimed.gui.GanimedView;
 import lunartools.ganimed.gui.SimpleEvents;
 
 public class GanimedController implements Observer{
+	private static Logger logger = LoggerFactory.getLogger(GanimedController.class);
 	private static final String SETTING__GANIMED_VIEW_LOCATION = "GanimedViewLocation";
 	private static final String SETTING__IMAGE_FOLDER = "ImageFolder";
 	private static final String SETTING__ANIM_FOLDER = "AnimFolder";
@@ -25,9 +29,10 @@ public class GanimedController implements Observer{
 	public GanimedController(){
 		settings=new Settings(GanimedModel.PROGRAMNAME,GanimedModel.determineProgramVersion());
 		model=new GanimedModel();
-		model.setLastImageFolder(settings.getString(SETTING__IMAGE_FOLDER));
+		model.getLoaderModel().setSavedImageFolder(settings.getString(SETTING__IMAGE_FOLDER));
 		model.setAnimFolder(settings.getString(SETTING__ANIM_FOLDER));
 		model.addObserver(this);
+		model.getLoaderModel().addObserver(this);
 		view=new GanimedView(model);
 		view.setLocation(settings.getPoint(SETTING__GANIMED_VIEW_LOCATION, view.getLocation()));
 		view.addObserver(this);
@@ -38,6 +43,7 @@ public class GanimedController implements Observer{
 		view.setVisible(true);
 		threadAnimation=new AnimationThread(model,view,imageService);
 		threadAnimation.start();
+		view.setStatusInfo("READY, select an image folder");
 	}
 
 	@Override
@@ -53,7 +59,7 @@ public class GanimedController implements Observer{
 		}else if(object==SimpleEvents.MODEL_ANIMNUMBEROFIMAGESCHANGED) {
 			imageService.createAnim();
 		}else if(object==SimpleEvents.MODEL_IMAGESIZECHANGED) {
-			if(model.getImageFolder()!=null) {
+			if(model.getLoaderModel().getImageFolder()!=null) {
 				imageService.createAnim();
 			}
 		}else if(object==SimpleEvents.MODEL_ANIMBYTEARRAYCHANGED) {
@@ -63,6 +69,10 @@ public class GanimedController implements Observer{
 				String imageTypename=model.getImageType().getName();
 				setStatusInfo(imageTypename+" size: "+resultImageSize.width+" x "+resultImageSize.height+", "+((double)animSizeInMb)/10+" mb");	
 			}
+		}else if(object instanceof ErrorMessage) {
+			setStatusError(((ErrorMessage)object).getMessage());
+		}else {
+			logger.trace("ignored message: "+object);
 		}
 	}
 
@@ -93,7 +103,7 @@ public class GanimedController implements Observer{
 	private void exit() {
 		shutdownInProgress=true;
 		settings.setPoint(SETTING__GANIMED_VIEW_LOCATION, view.getLocation());
-		File file=model.getImageFolder();
+		File file=model.getLoaderModel().getImageFolder();
 		if(file!=null) {
 			settings.set(SETTING__IMAGE_FOLDER, file.getAbsolutePath());
 		}
