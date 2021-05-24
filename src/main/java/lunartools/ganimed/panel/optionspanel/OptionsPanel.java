@@ -12,24 +12,30 @@ public class OptionsPanel extends JPanel{
 	private GanimedView ganimdeView;
 	private OptionsGifView gifOptionsPanel;
 	private OptionsPngView pngOptionsPanel;
-	
-	public OptionsPanel(GanimedModel model, GanimedView view) {
-		this.ganimedModel=model;
-		this.ganimdeView=view;
+
+	public OptionsPanel(GanimedModel ganimedModel, GanimedView ganimedView) {
+		this.ganimedModel=ganimedModel;
+		this.ganimdeView=ganimedView;
 		this.setLayout(null);
-		
-		this.setLayout(null);
-		gifOptionsPanel=new OptionsGifView(model, view);
+
+		int xLabel1=12;
+		int sPanelWidth;
+		int y=0;
+		gifOptionsPanel=new OptionsGifView(ganimedModel, ganimedView);
+		gifOptionsPanel.setBounds(xLabel1, 0, gifOptionsPanel.getWidth(), gifOptionsPanel.getHeight());
 		gifOptionsPanel.setVisible(false);
-		pngOptionsPanel=new OptionsPngView(model, view);
+		pngOptionsPanel=new OptionsPngView(ganimedModel, ganimedView);
+		pngOptionsPanel.setBounds(xLabel1, 0, pngOptionsPanel.getWidth(), pngOptionsPanel.getHeight());
 		pngOptionsPanel.setVisible(false);
 		add((JPanel)gifOptionsPanel);
 		add((JPanel)pngOptionsPanel);
-		
-		//TODO: size of OptionsPanel
-		setBounds(0,0,860,178);
+
+		sPanelWidth=Math.max(gifOptionsPanel.getWidth(),pngOptionsPanel.getWidth());
+		y+=Math.max(gifOptionsPanel.getHeight(),pngOptionsPanel.getHeight());
+
+		setBounds(0,0,sPanelWidth,y);
 	}
-	
+
 	public void refreshGui() {
 		if(ganimedModel.getImageType()==ImageType.GIF) {
 			pngOptionsPanel.setVisible(false);

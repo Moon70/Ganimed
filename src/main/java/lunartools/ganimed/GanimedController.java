@@ -132,5 +132,4 @@ public class GanimedController implements Observer{
 	public boolean isShutdownInProgress() {
 		return shutdownInProgress;
 	}
-
 }

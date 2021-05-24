@@ -16,7 +16,7 @@ public class CaptureView extends JPanel{
 	private GanimedModel ganimedModel;
 	private GanimedView ganimedView;
 	private CaptureModel captureModel;
-	
+
 	public JTextField textfieldFolderpath;
 	JButton button;
 	JTextField textfieldImagesFps;
@@ -26,15 +26,15 @@ public class CaptureView extends JPanel{
 		this.ganimedView=ganimedView;
 		this.captureModel=ganimedModel.getCaptureModel();
 		this.setLayout(null);
-		
+
 		KeyListener keyListener=new CaptureKeyListener(captureModel,this);
-		
+
 		int y=4;
 		int xLabel1=12;
 		int xField1=90;
 		int lineHight=18;
-		int lineDistance=22;
-		
+		int lineDistance=21;
+
 		JLabel label=new JLabel("Animation capture not implemented yet");
 		label.setBounds(xLabel1,y,300,lineHight);
 		add(label);
@@ -45,7 +45,7 @@ public class CaptureView extends JPanel{
 		setBounds(0,0,860,y);
 		//System.out.println("CaptureView y: "+y);
 	}
-	
+
 	public void refreshGui() {
 	}
 

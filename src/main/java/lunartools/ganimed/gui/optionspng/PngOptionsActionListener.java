@@ -8,18 +8,18 @@ import javax.swing.JComboBox;
 
 import lunartools.ganimed.GanimedModel;
 import lunartools.ganimed.gui.optionspng.model.PngEncoderType;
-import lunartools.ganimed.gui.optionspng.model.TransparentPixelEnum;
-import lunartools.ganimed.gui.optionspng.model.TruecolourBitsEnum;
+import lunartools.ganimed.gui.optionspng.model.TransparentPixelCount;
+import lunartools.ganimed.gui.optionspng.model.TruecolourBitsCount;
 
 public class PngOptionsActionListener implements ActionListener{
 	private GanimedModel ganimedModel;
 	private OptionsPngView optionsPngView;
-	
+
 	public PngOptionsActionListener(GanimedModel ganimedModel,OptionsPngView optionsPngView) {
 		this.ganimedModel=ganimedModel;
 		this.optionsPngView=optionsPngView;
 	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent actionEvent) {
 		Object source=actionEvent.getSource();
@@ -27,15 +27,15 @@ public class PngOptionsActionListener implements ActionListener{
 			ganimedModel.getOptionsPngModel().enableConvertToPalette(((JCheckBox)source).isSelected());
 		}else if(source.equals(optionsPngView.comboBoxTruecolourOptions)) {
 			@SuppressWarnings("unchecked")
-			JComboBox<TruecolourBitsEnum> jComboBox=(JComboBox<TruecolourBitsEnum>)source;
-			TruecolourBitsEnum truecolourBitsEnum=(TruecolourBitsEnum)jComboBox.getSelectedItem();
+			JComboBox<TruecolourBitsCount> jComboBox=(JComboBox<TruecolourBitsCount>)source;
+			TruecolourBitsCount truecolourBitsEnum=(TruecolourBitsCount)jComboBox.getSelectedItem();
 			ganimedModel.getOptionsPngModel().setTrueColourBits(truecolourBitsEnum);
 		}else if(source.equals(optionsPngView.checkboxUseTransparentPixel)) {
 			ganimedModel.getOptionsPngModel().enableTransparentPixel(((JCheckBox)source).isSelected());
 		}else if(source.equals(optionsPngView.comboBoxTransparentPixelQuantity)) {
 			@SuppressWarnings("unchecked")
-			JComboBox<TransparentPixelEnum> jComboBox=(JComboBox<TransparentPixelEnum>)source;
-			TransparentPixelEnum transparentPixelEnum=(TransparentPixelEnum)jComboBox.getSelectedItem();
+			JComboBox<TransparentPixelCount> jComboBox=(JComboBox<TransparentPixelCount>)source;
+			TransparentPixelCount transparentPixelEnum=(TransparentPixelCount)jComboBox.getSelectedItem();
 			ganimedModel.getOptionsPngModel().setNumberOfTransparentPixel(transparentPixelEnum);
 		}else if(source.equals(optionsPngView.jRadioButtonPngEncoder)) {
 			ganimedModel.getOptionsPngModel().setPngEncoderType(PngEncoderType.Ganimed);

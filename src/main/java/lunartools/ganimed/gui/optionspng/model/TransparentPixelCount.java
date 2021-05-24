@@ -1,6 +1,6 @@
 package lunartools.ganimed.gui.optionspng.model;
 
-public enum TransparentPixelEnum {
+public enum TransparentPixelCount {
 	PIXEL1("1 pixel",1),
 	PIXEL2("2 pixel",2),
 	PIXEL3("3 pixel",3),
@@ -14,8 +14,8 @@ public enum TransparentPixelEnum {
 
 	private String title;
 	private int value;
-	
-	TransparentPixelEnum(String title, int value) {
+
+	TransparentPixelCount(String title, int value) {
 		this.title=title;
 		this.value=value;
 	}
@@ -27,7 +27,7 @@ public enum TransparentPixelEnum {
 	public int getValue() {
 		return value;
 	}
-	
+
 	public String toString() {
 		return title;
 	}

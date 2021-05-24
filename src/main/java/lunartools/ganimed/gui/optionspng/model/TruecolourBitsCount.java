@@ -1,6 +1,6 @@
 package lunartools.ganimed.gui.optionspng.model;
 
-public enum TruecolourBitsEnum {
+public enum TruecolourBitsCount {
 	BIT24("24 bit",8),
 	BIT21("21 bit",7),
 	BIT18("18 bit",6),
@@ -12,8 +12,8 @@ public enum TruecolourBitsEnum {
 
 	private String title;
 	private int value;
-	
-	TruecolourBitsEnum(String title, int value) {
+
+	TruecolourBitsCount(String title, int value) {
 		this.title=title;
 		this.value=value;
 	}
@@ -25,7 +25,7 @@ public enum TruecolourBitsEnum {
 	public int getValue() {
 		return value;
 	}
-	
+
 	public String toString() {
 		return title;
 	}

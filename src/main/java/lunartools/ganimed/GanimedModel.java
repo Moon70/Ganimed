@@ -1,6 +1,5 @@
 package lunartools.ganimed;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +41,7 @@ public class GanimedModel extends Observable{
 	private EditorModel editorModel;
 	private OptionsPngModel optionsPngModel;
 	private OptionsGifModel optionsGifModel;
-	
+
 	public GanimedModel() {
 		loaderModel=new LoaderModel(this);
 		captureModel=new CaptureModel(this);
@@ -120,31 +119,31 @@ public class GanimedModel extends Observable{
 		if(animationData!=null) {
 			this.imageWidth=animationData.getWidth();
 			this.imageHeight=animationData.getHeight();
-//			cutLeft=1;
-//			cutLeftMin=1;
-//			cutLeftMax=animationData.size()-MINIMUM_ANIM_FRAMECOUNT;
-//			cutRight=animationData.size();
-//			cutRightMin=1+MINIMUM_ANIM_FRAMECOUNT;
-//			cutRightMax=animationData.size();
+			//			cutLeft=1;
+			//			cutLeftMin=1;
+			//			cutLeftMax=animationData.size()-MINIMUM_ANIM_FRAMECOUNT;
+			//			cutRight=animationData.size();
+			//			cutRightMin=1+MINIMUM_ANIM_FRAMECOUNT;
+			//			cutRightMax=animationData.size();
 			editorModel.reset(animationData);
-//			cropLeft=0;
-//			cropLeftMin=0;
-//			cropLeftMax=this.imageWidth-MINIMUM_ANIM_SIZE;
-//			cropTop=0;
-//			cropTopMin=0;
-//			cropTopMax=this.imageHeight-MINIMUM_ANIM_SIZE;
-//			cropRight=this.imageWidth;
-//			cropRightMin=MINIMUM_ANIM_SIZE;
-//			cropRightMax=this.imageWidth;
-//			cropBottom=this.imageHeight;
-//			cropBottomMin=0;
-//			cropBottomMax=this.imageHeight-MINIMUM_ANIM_SIZE;
-//			resizePercent=100;
-//			resizeMin=1;
-//			resizeMax=101;
-//			if(animFps==0) {
-//				setAnimFps(loaderModel.getImagesFps()>>1);
-//			}
+			//			cropLeft=0;
+			//			cropLeftMin=0;
+			//			cropLeftMax=this.imageWidth-MINIMUM_ANIM_SIZE;
+			//			cropTop=0;
+			//			cropTopMin=0;
+			//			cropTopMax=this.imageHeight-MINIMUM_ANIM_SIZE;
+			//			cropRight=this.imageWidth;
+			//			cropRightMin=MINIMUM_ANIM_SIZE;
+			//			cropRightMax=this.imageWidth;
+			//			cropBottom=this.imageHeight;
+			//			cropBottomMin=0;
+			//			cropBottomMax=this.imageHeight-MINIMUM_ANIM_SIZE;
+			//			resizePercent=100;
+			//			resizeMin=1;
+			//			resizeMax=101;
+			//			if(animFps==0) {
+			//				setAnimFps(loaderModel.getImagesFps()>>1);
+			//			}
 			sendMessage(SimpleEvents.MODEL_IMAGESCHANGED);
 		}
 	}
@@ -157,7 +156,7 @@ public class GanimedModel extends Observable{
 	public ImageData[] getImageDataArray() {
 		return bufferedImages==null?null:bufferedImages.getAsArray();
 	}
-	
+
 	private void sendMessage(Object message) {
 		setChanged();
 		notifyObservers(message);
@@ -219,12 +218,18 @@ public class GanimedModel extends Observable{
 		return versionProgram;
 	}
 
-	public OptionsPngModel getOptionsPngModel() {
-		return optionsPngModel;
+	public IOptionsModel getCurrentOptionsModel() {
+		if(imageType==ImageType.GIF) {
+			return optionsGifModel;
+		}else if(imageType==ImageType.PNG) {
+			return optionsPngModel;
+		}else {
+			return null;
+		}
 	}
 
-	public void setOptionsPngModel(OptionsPngModel optionsPngModel) {
-		this.optionsPngModel = optionsPngModel;
+	public OptionsPngModel getOptionsPngModel() {
+		return optionsPngModel;
 	}
 
 	public OptionsGifModel getOptionsGifModel() {
@@ -235,19 +240,19 @@ public class GanimedModel extends Observable{
 	public boolean isAnimationDataAvailable() {
 		return loaderModel.getImageFolder()!=null;
 	}
-	
+
 	public LoaderModel getLoaderModel() {
 		return loaderModel;
 	}
-	
+
 	public CaptureModel getCaptureModel() {
 		return captureModel;
 	}
-	
+
 	public EditorModel getEditorModel() {
 		return editorModel;
 	}
-	
+
 	public void calculateAnimPlaybackParameter() {
 		int animFps=editorModel.getAnimFps();
 		if(animFps==0) {

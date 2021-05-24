@@ -302,9 +302,9 @@ public class EditorModel extends Observable{
 	public int getAnimDelay() {
 		return animDelay;
 	}
-	//TODO: min
+	//TODO: getAnimDelayMin()
 	
-	//TODO: max
+	//TODO: getAnimDelayMax()
 	
 
 	public void setAnimEndDelay(int delay) {
@@ -325,7 +325,7 @@ public class EditorModel extends Observable{
 		return animEndDelay;
 	}
 
-	//TODO: min
+	//TODO: getAnimEndDelayMin()
 
 	public int getAnimEndDelayMax() {
 		return animEndDelayMax;

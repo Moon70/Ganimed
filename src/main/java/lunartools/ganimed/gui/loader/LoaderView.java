@@ -18,7 +18,7 @@ public class LoaderView extends JPanel{
 	private GanimedModel ganimedModel;
 	private GanimedView ganimedView;
 	private LoaderModel loaderModel;
-	
+
 	public JTextField textfieldFolderpath;
 	JButton button;
 	JTextField textfieldImagesFps;
@@ -28,15 +28,15 @@ public class LoaderView extends JPanel{
 		this.ganimedView=ganimedView;
 		this.loaderModel=ganimedModel.getLoaderModel();
 		this.setLayout(null);
-		
+
 		KeyListener keyListener=new LoaderKeyListener(loaderModel,this);
-		
+
 		int y=4;
 		int xLabel1=12;
 		int xField1=90;
 		int lineHight=18;
-		int lineDistance=22;
-		
+		int lineDistance=21;
+
 		JLabel label=new JLabel("Image folder:");
 		label.setBounds(xLabel1,y,100,lineHight);
 		add(label);
@@ -69,7 +69,7 @@ public class LoaderView extends JPanel{
 		setBounds(0,0,860,y);
 		//System.out.println("LoaderView y: "+y);
 	}
-	
+
 	public void refreshGui() {
 		File folder=loaderModel.getImageFolder();
 		if(folder==null) {
@@ -82,10 +82,10 @@ public class LoaderView extends JPanel{
 
 	public void selectImageFolder() {
 		final JFileChooser fileChooser= new JFileChooser() {
-			 public void updateUI() {
-                 putClientProperty("FileChooser.useShellFolder", Boolean.FALSE);
-                 super.updateUI();
-             }
+			public void updateUI() {
+				putClientProperty("FileChooser.useShellFolder", Boolean.FALSE);
+				super.updateUI();
+			}
 		};
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		if(loaderModel.getImageFolder()!=null) {
@@ -100,7 +100,7 @@ public class LoaderView extends JPanel{
 			ganimedView.setStatusInfo("folder selection canceled");
 		}
 	}
-	
+
 	void selectedImageFolder(File file) {
 		if(file.exists()) {
 			loaderModel.setImageFolder(file);
@@ -108,5 +108,5 @@ public class LoaderView extends JPanel{
 			ganimedView.setStatusError("Folder does not exist: "+file.getAbsolutePath());
 		}
 	}
-	
+
 }

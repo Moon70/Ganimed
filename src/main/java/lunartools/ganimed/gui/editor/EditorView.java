@@ -17,7 +17,7 @@ public class EditorView extends JPanel{
 	private GanimedModel ganimedModel;
 	private GanimedView ganimedView;
 	private EditorModel editorModel;
-	
+
 	JTextField textfieldCutLeft;
 	Scrollbar scrollbarCutLeft;
 	Scrollbar scrollbarCutRight;
@@ -44,11 +44,11 @@ public class EditorView extends JPanel{
 		this.ganimedView=view;
 		this.editorModel=this.ganimedModel.getEditorModel();
 		this.setLayout(null);
-		
+
 		KeyListener keyListener=new EditorKeyListener(editorModel,this);
 		AdjustmentListener adjustmentlistener=new EditorAdjustmentListener(editorModel,this);
 		EditorActionListener editorActionListener=new EditorActionListener(this);
-		
+
 		int xLabel1=12;
 		int xField1=90;
 		int xScrollbar1=120;
@@ -58,9 +58,9 @@ public class EditorView extends JPanel{
 		int y=4;
 		int scrollHeight=14;
 		int lineHight=18;
-		int lineDistance=22;
+		int lineDistance=21;
 		int lineDistance2=30;
-		
+
 		JLabel label=new JLabel("Cut left:");
 		label.setBounds(xLabel1,y,100,lineHight);
 		add(label);
@@ -88,7 +88,7 @@ public class EditorView extends JPanel{
 		add(scrollbarCutRight);
 
 		y+=lineDistance2;
-		
+
 		label=new JLabel("Crop top:");
 		label.setBounds(xLabel1,y,100,lineHight);
 		add(label);
@@ -116,7 +116,7 @@ public class EditorView extends JPanel{
 		add(scrollbarCropBottom);
 
 		y+=lineDistance;
-		
+
 		label=new JLabel("Crop left:");
 		label.setBounds(xLabel1,y,100,lineHight);
 		add(label);
@@ -144,7 +144,7 @@ public class EditorView extends JPanel{
 		add(scrollbarCropRight);
 
 		y+=lineDistance;
-		
+
 		label=new JLabel("Resize %:");
 		label.setBounds(xLabel1,y,100,lineHight);
 		add(label);
@@ -159,7 +159,7 @@ public class EditorView extends JPanel{
 		add(scrollbarResize);
 
 		y+=lineDistance2;
-		
+
 		label=new JLabel("Anim FPS:");
 		label.setBounds(xLabel1,y,100,lineHight);
 		add(label);
@@ -189,7 +189,7 @@ public class EditorView extends JPanel{
 		add(scrollbarAnimDelay);
 
 		y+=lineDistance;
-		
+
 		label=new JLabel("End delay:");
 		label.setBounds(xLabel1,y,100,lineHight);
 		add(label);
@@ -204,23 +204,11 @@ public class EditorView extends JPanel{
 		add(scrollbarAnimEndDelay);
 
 		y+=lineDistance;
-		
+
 		setBounds(0,0,860,178);
 		//System.out.println("EditorPanel y: "+y);
 	}
-	
 
-//	public void xxxrefreshAnimPlaybackValues() {
-//		textfieldAnimFps.setText(""+model.getAnimFps());
-//		scrollbarAnimFps.setMaximum(model.getAnimFpsMax());
-//		scrollbarAnimFps.setValue(model.getAnimFps());
-//		textfieldAnimDelay.setText(""+model.getAnimDelay());
-//		scrollbarAnimDelay.setValue(model.getAnimDelay());
-//		textfieldAnimEndDelay.setText(""+model.getAnimEndDelay());
-//		scrollbarAnimEndDelay.setMaximum(model.getAnimEndDelayMax());
-//		scrollbarAnimEndDelay.setValue(model.getAnimEndDelay());
-//	}
-	
 	public void refreshGui() {
 		boolean animationDataIsAvailable=ganimedModel.isAnimationDataAvailable();
 		textfieldCutLeft.setEnabled(animationDataIsAvailable);
@@ -251,15 +239,15 @@ public class EditorView extends JPanel{
 		scrollbarCropLeft.setMaximum(editorModel.getCropLeftMax());
 		scrollbarCropTop.setMinimum(editorModel.getCropTopMin());
 		scrollbarCropTop.setMaximum(editorModel.getCropTopMax());
-		
+
 		scrollbarCropRight.setMinimum(editorModel.getCropRightMin());
 		scrollbarCropRight.setMaximum(editorModel.getCropRightMax());
 		scrollbarCropBottom.setMinimum(editorModel.getCropBottomMin());
 		scrollbarCropBottom.setMaximum(editorModel.getCropBottomMax());
-		
+
 		scrollbarResize.setMinimum(editorModel.getResizeMin());
 		scrollbarResize.setMaximum(editorModel.getResizeMax());
-		
+
 		textfieldCutLeft.setText(""+editorModel.getCutLeft());
 		scrollbarCutLeft.setValue(editorModel.getCutLeft());
 		textfieldCutRight.setText(""+editorModel.getCutRight());

@@ -4,16 +4,12 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.Vector;
-
-import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import lunartools.FileTools;
-import lunartools.colorquantizer.GPAC_experimental;
 import lunartools.ganimed.panel.optionspanel.ImageType;
 
 public class ImageService {
@@ -76,8 +72,8 @@ public class ImageService {
 						controller.setStatusError(e.getMessage());
 						controller.disableProgressBar();
 						return;
-//					} catch (IOException e) {
-//						e.printStackTrace();
+						//					} catch (IOException e) {
+						//						e.printStackTrace();
 					}
 				}
 				controller.disableProgressBar();
@@ -127,7 +123,7 @@ public class ImageService {
 				}
 			};
 		};
-		createAnimThread.start();
+		//createAnimThread.start();
 	}
 
 	public byte[] createAnimByteArray(boolean showProgressBar) {
@@ -142,7 +138,7 @@ public class ImageService {
 			}
 			AnimCreator animCreator;
 			if(imageType==ImageType.GIF) {
-				animCreator=new GifAnimCreator(controller);
+				animCreator=new GifAnimCreator(model.getOptionsGifModel(),controller);
 			}else if(imageType==ImageType.PNG) {
 				animCreator=new PngAnimCreator(model.getOptionsPngModel(),controller);
 			}else {
@@ -152,11 +148,7 @@ public class ImageService {
 				if(Thread.interrupted() || controller.isShutdownInProgress()) {
 					return null;
 				}
-				//BufferedImage bufferedImage=getResultBufferedImage(vecIndexTable.get(i));
 				ImageData imageData=model.getAnimationData().getImageData(vecIndexTable.get(i));
-//				if(imageType instanceof ImageTypeGif) {
-//					new GPAC_experimental().quantizeColors(bufferedImage,256);
-//				}
 				if(i<vecIndexTable.size()-1) {
 					animCreator.addImage(imageData, model.getEditorModel().getAnimDelay(), false);
 				}else {

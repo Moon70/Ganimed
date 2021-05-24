@@ -15,10 +15,14 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
-import lunartools.colorquantizer.GPAC_experimental;
+import lunartools.colorquantizer.DitheringAlgorithm;
+import lunartools.colorquantizer.GPAC;
+import lunartools.colorquantizer.QuantizerAlgorithm;
+import lunartools.ganimed.gui.optionscolourreduction.model.ColourReductionModel;
+import lunartools.ganimed.gui.optionsgif.model.OptionsGifModel;
 
 public class GifAnimCreator implements AnimCreator{
-	private GanimedController controller;
+	private GanimedController ganimedController;
 	private ByteArrayOutputStream baos;
 	private ImageOutputStream imageOutputStream;
 	private ImageWriter imageWriter;
@@ -26,15 +30,60 @@ public class GifAnimCreator implements AnimCreator{
 	private IIOMetadata iooMetadata;
 	private int delay;
 	private int progressStep;
-	
-	public GifAnimCreator(GanimedController controller) {
-		this.controller=controller;
+	private GPAC gpac;
+
+	public GifAnimCreator(OptionsGifModel optionsGifModel,GanimedController ganimedController) {
+		this.ganimedController=ganimedController;
+		gpac=new GPAC();
+		ColourReductionModel colourReductionModel=optionsGifModel.getColourReductionModel();
+		switch(colourReductionModel.getQuantizerAlgorithm()) {
+		case MEDIAN_CUT:
+			gpac.setQuantizerAlgorithm(QuantizerAlgorithm.MEDIAN_CUT);
+			break;
+		default:
+			throw new RuntimeException("colour quantizer algorithm not supported: "+colourReductionModel.getQuantizerAlgorithm());
+		}
+		switch(colourReductionModel.getDitheringAlgorithm()) {
+		case NO_DITHERING:
+			gpac.setDitheringAlgorithm(DitheringAlgorithm.NO_DITHERING);
+			break;
+			//case SIMPLE_DITHERING1:
+			//	gpac.setDitheringAlgorithm(DitheringAlgorithm.SIMPLE_DITHERING1);
+			//	break;
+		case FLOYD_STEINBERG:
+			gpac.setDitheringAlgorithm(DitheringAlgorithm.FLOYD_STEINBERG);
+			break;
+		case JARVIS_JUDICE_NINKE:
+			gpac.setDitheringAlgorithm(DitheringAlgorithm.JARVIS_JUDICE_NINKE);
+			break;
+		case STUCKI:
+			gpac.setDitheringAlgorithm(DitheringAlgorithm.STUCKI);
+			break;
+		case ATKINSON:
+			gpac.setDitheringAlgorithm(DitheringAlgorithm.ATKINSON);
+			break;
+		case BURKES:
+			gpac.setDitheringAlgorithm(DitheringAlgorithm.BURKES);
+			break;
+		case SIERRA:
+			gpac.setDitheringAlgorithm(DitheringAlgorithm.SIERRA);
+			break;
+		case TWO_ROW_SIERRA:
+			gpac.setDitheringAlgorithm(DitheringAlgorithm.TWO_ROW_SIERRA);
+			break;
+		case SIERRA_LITE:
+			gpac.setDitheringAlgorithm(DitheringAlgorithm.SIERRA_LITE);
+			break;
+		default:
+			throw new RuntimeException("dithering algorithm not supported: "+colourReductionModel.getDitheringAlgorithm());
+		}
 	}
-	
+
 	public void addImage(ImageData imageData, int delay, boolean loop) throws IOException {
-		controller.setProgressBarValue(progressStep++,"creating GIF...");
+		ganimedController.setProgressBarValue(progressStep++,"creating GIF...");
 		BufferedImage bufferedImage=imageData.getResultBufferedImage();
-		new GPAC_experimental().quantizeColors(bufferedImage,256);
+
+		gpac.quantizeColours(bufferedImage,256);
 		if(iooMetadata==null) {
 			this.delay=delay;
 			baos=new ByteArrayOutputStream();

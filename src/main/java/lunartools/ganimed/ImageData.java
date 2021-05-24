@@ -1,6 +1,5 @@
 package lunartools.ganimed;
 
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -12,12 +11,12 @@ public class ImageData {
 	private AnimationData animationData;
 	private File file;
 	private BufferedImage bufferedImage;
-	
+
 	public ImageData(AnimationData animationData,File file) {
 		this.animationData=animationData;
 		this.file=file;
 	}
-	
+
 	public File getFile() {
 		return file;
 	}
@@ -35,7 +34,7 @@ public class ImageData {
 		}
 		return bufferedImage;
 	}
-	
+
 	public BufferedImage getResultBufferedImage() {
 		GanimedModel model=animationData.getGanimedModel();
 		int width=model.getEditorModel().getCropRight()-model.getEditorModel().getCropLeft();
@@ -55,5 +54,5 @@ public class ImageData {
 				null);
 		return bufferedImage;
 	}
-	
+
 }
