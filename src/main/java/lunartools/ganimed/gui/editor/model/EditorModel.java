@@ -41,7 +41,7 @@ public class EditorModel extends Observable{
 	public EditorModel(GanimedModel ganimedModel) {
 		this.ganimedModel=ganimedModel;
 	}
-	
+
 	public void sendMessage(Object message) {
 		setChanged();
 		notifyObservers(message);
@@ -60,7 +60,7 @@ public class EditorModel extends Observable{
 		cutRightMin=cutLeft+MINIMUM_ANIM_FRAMECOUNT;
 		sendMessage(SimpleEvents.MODEL_IMAGESIZECHANGED);
 	}
-	
+
 	public int getCutLeft() {
 		return cutLeft;
 	}
@@ -98,23 +98,24 @@ public class EditorModel extends Observable{
 	public int getCutRightMax() {
 		return cutRightMax;
 	}
-	
+
 	//TODO: refactor
 	public void reset(AnimationData animationData) {
 		cutLeft=1;
 		cutLeftMin=1;
-		cutLeftMax=animationData.size()-MINIMUM_ANIM_FRAMECOUNT;
-		cutRight=animationData.size();
+		cutLeftMax=animationData.logicalSize()-MINIMUM_ANIM_FRAMECOUNT;
+		cutRight=animationData.logicalSize();
 		cutRightMin=1+MINIMUM_ANIM_FRAMECOUNT;
-		cutRightMax=animationData.size();
-		cropTop=0;
-		cropTopMin=0;
+		cutRightMax=animationData.logicalSize()+1;
+		
+		cropTop=1;
+		cropTopMin=1;
 		cropTopMax=animationData.getHeight()-MINIMUM_ANIM_SIZE;
 		cropBottom=animationData.getHeight();
-		cropBottomMin=0;
-		cropBottomMax=animationData.getHeight()-MINIMUM_ANIM_SIZE;
-		cropLeft=0;
-		cropLeftMin=0;
+		cropBottomMin=MINIMUM_ANIM_SIZE;
+		cropBottomMax=animationData.getHeight();
+		cropLeft=1;
+		cropLeftMin=1;
 		cropLeftMax=animationData.getWidth()-MINIMUM_ANIM_SIZE;
 		cropRight=animationData.getWidth();
 		cropRightMin=MINIMUM_ANIM_SIZE;
@@ -123,7 +124,7 @@ public class EditorModel extends Observable{
 		resizeMin=1;
 		resizeMax=101;
 		if(animFps==0) {
-			setAnimFps(ganimedModel.getLoaderModel().getImagesFps()>>1);
+			setAnimFps(ganimedModel.getImageSelectionModel().getImagesFps()>>1);
 		}
 	}
 
@@ -264,7 +265,7 @@ public class EditorModel extends Observable{
 		if(fps<1) {
 			fps=1;
 		}
-		int imagesFps=ganimedModel.getLoaderModel().getImagesFps();
+		int imagesFps=ganimedModel.getImageSelectionModel().getImagesFps();
 		if(fps>imagesFps) {
 			fps=imagesFps;
 		}
@@ -282,7 +283,7 @@ public class EditorModel extends Observable{
 	}
 
 	public int getAnimFpsMax() {
-		return ganimedModel.getLoaderModel().getImagesFps()+1;
+		return ganimedModel.getImageSelectionModel().getImagesFps()+1;
 	}
 
 	public void setAnimDelay(int delay) {
@@ -303,9 +304,9 @@ public class EditorModel extends Observable{
 		return animDelay;
 	}
 	//TODO: getAnimDelayMin()
-	
+
 	//TODO: getAnimDelayMax()
-	
+
 
 	public void setAnimEndDelay(int delay) {
 		if(this.animEndDelay==delay) {

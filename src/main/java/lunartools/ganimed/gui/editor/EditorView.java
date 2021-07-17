@@ -238,12 +238,12 @@ public class EditorView extends JPanel{
 		scrollbarCropLeft.setMinimum(editorModel.getCropLeftMin());
 		scrollbarCropLeft.setMaximum(editorModel.getCropLeftMax());
 		scrollbarCropTop.setMinimum(editorModel.getCropTopMin());
-		scrollbarCropTop.setMaximum(editorModel.getCropTopMax());
+		scrollbarCropTop.setMaximum(editorModel.getCropTopMax()+1);
 
 		scrollbarCropRight.setMinimum(editorModel.getCropRightMin());
-		scrollbarCropRight.setMaximum(editorModel.getCropRightMax());
+		scrollbarCropRight.setMaximum(editorModel.getCropRightMax()+1);
 		scrollbarCropBottom.setMinimum(editorModel.getCropBottomMin());
-		scrollbarCropBottom.setMaximum(editorModel.getCropBottomMax());
+		scrollbarCropBottom.setMaximum(editorModel.getCropBottomMax()+1);
 
 		scrollbarResize.setMinimum(editorModel.getResizeMin());
 		scrollbarResize.setMaximum(editorModel.getResizeMax());

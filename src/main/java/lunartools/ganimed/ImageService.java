@@ -3,31 +3,35 @@ package lunartools.ganimed;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.Vector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import lunartools.FileTools;
+import lunartools.ganimed.gui.editor.model.EditorModel;
 import lunartools.ganimed.panel.optionspanel.ImageType;
+import lunartools.ganimed.worker.LoadImagesWorker;
+import lunartools.ganimed.worker.SaveAnim;
+import lunartools.ganimed.worker.SaveImagesWorker;
+import lunartools.ganimed.worker.SaveRawImagesWorker;
+import lunartools.progressdialog.ProgressDialog;
 
 public class ImageService {
+	@SuppressWarnings("unused")
 	private static Logger logger = LoggerFactory.getLogger(ImageService.class);
-	private GanimedModel model;
-	private GanimedController controller;
-	private volatile Thread processImageFolderThread;
+	private GanimedModel ganimedModel;
+	private GanimedController ganimedController;
 	private volatile Thread createAnimThread;
 
-	public ImageService(GanimedModel model,GanimedController controller) {
-		this.model=model;
-		this.controller=controller;
+	public ImageService(GanimedModel ganimedModel,GanimedController ganimedController) {
+		this.ganimedModel=ganimedModel;
+		this.ganimedController=ganimedController;
 	}
 
 	public Dimension getResultImageSize() {
-		int width=model.getEditorModel().getCropRight()-model.getEditorModel().getCropLeft();
-		int height=model.getEditorModel().getCropBottom()-model.getEditorModel().getCropTop();
-		int resizePercent=model.getEditorModel().getResizePercent();
+		int width=ganimedModel.getEditorModel().getCropRight()-ganimedModel.getEditorModel().getCropLeft()+1;
+		int height=ganimedModel.getEditorModel().getCropBottom()-ganimedModel.getEditorModel().getCropTop()+1;
+		int resizePercent=ganimedModel.getEditorModel().getResizePercent();
 		if(resizePercent!=100) {
 			width=width*resizePercent/100;
 			height=height*resizePercent/100;
@@ -35,53 +39,24 @@ public class ImageService {
 		return new Dimension(width,height);
 	}
 
-	@Deprecated
-	public BufferedImage getResultBufferedImage(int index){
+	public BufferedImage getLogicalResultBufferedImage(int index) {
 		Dimension resultImageSize=getResultImageSize();
-		BufferedImage bufferedImage=new BufferedImage(resultImageSize.width,resultImageSize.height,BufferedImage.TYPE_INT_RGB);
-		Graphics graphicsImage=bufferedImage.getGraphics();
-		graphicsImage.drawImage(model.getImageDataArray()[index].getBufferedImage(),
+		BufferedImage bufferedImageResult=new BufferedImage(resultImageSize.width,resultImageSize.height,BufferedImage.TYPE_INT_RGB);
+		Graphics graphicsImage=bufferedImageResult.getGraphics();
+		AnimationData animationData=ganimedModel.getAnimationData();
+		BufferedImage bufferedImage=animationData.getLogicalImageData(index).getBufferedImage();
+		graphicsImage.drawImage(bufferedImage,
 				0, 0,
 				resultImageSize.width,resultImageSize.height,
-				model.getEditorModel().getCropLeft(), model.getEditorModel().getCropTop(),
-				model.getEditorModel().getCropRight(),model.getEditorModel().getCropBottom(),
+				ganimedModel.getEditorModel().getCropLeft()-1, ganimedModel.getEditorModel().getCropTop()-1,
+				ganimedModel.getEditorModel().getCropRight(),ganimedModel.getEditorModel().getCropBottom(),
 				null);
-		return bufferedImage;
+		return bufferedImageResult;
 	}
 
 	public void processImageFolder() {
-		if(processImageFolderThread!=null && processImageFolderThread.isAlive()) {
-			processImageFolderThread.interrupt();
-		}
-		processImageFolderThread=new Thread() {
-			public void run() {
-				model.setImageData(null);
-				File fileFolder=model.getLoaderModel().getImageFolder();
-				File[] files=FileTools.listFilesSorted(fileFolder);
-				controller.enableProgressBar(files.length);
-				AnimationData animationData=new AnimationData(model);
-				for(int i=0;i<files.length;i++) {
-					if(isInterrupted() || controller.isShutdownInProgress()) {
-						return;
-					}
-					controller.setProgressBarValue(i,"Reading: "+files[i]);
-					try {
-						animationData.addFile(files[i]);
-					} catch (Exception e) {
-						logger.error(e.getMessage(),e);
-						controller.setStatusError(e.getMessage());
-						controller.disableProgressBar();
-						return;
-						//					} catch (IOException e) {
-						//						e.printStackTrace();
-					}
-				}
-				controller.disableProgressBar();
-				controller.setStatusInfo("READY, "+files.length+" files processed");
-				model.setImageData(animationData);
-			};
-		};
-		processImageFolderThread.start();
+		LoadImagesWorker worker=new LoadImagesWorker(ganimedModel,ganimedController);
+		ProgressDialog.executeWithProgresssDialog(ganimedController.getJFrame() ,GanimedModel.PROGRAMNAME, "Load images",worker);
 	}
 
 	private volatile boolean createAnim_sleeping=false;
@@ -104,19 +79,19 @@ public class ImageService {
 				try {
 					createAnim_sleeping=true;
 					createAnim_sleepUntil=System.currentTimeMillis()+5000;
-					while(createAnim_sleepUntil>System.currentTimeMillis() || model.getNumberOfImagesToSkip()==0) {
-						if(controller.isShutdownInProgress()) {
+					while(createAnim_sleepUntil>System.currentTimeMillis() || ganimedModel.getNumberOfImagesToSkip()==0) {
+						if(ganimedController.isShutdownInProgress()) {
 							return;
 						}
 						Thread.sleep(500);
 					}
 					createAnim_sleeping=false;
-					model.setBytearrayAnim(null);
-					String imageTypename=model.getImageType().getName();
-					controller.setStatusInfo("estimating "+imageTypename+" size in background task...");
-					model.setBytearrayAnim(createAnimByteArray(false));
+					ganimedModel.setBytearrayAnim(null);
+					String imageTypename=ganimedModel.getImageType().getName();
+					ganimedController.setStatusInfo("estimating "+imageTypename+" size in background task...");
+					ganimedModel.setBytearrayAnim(createAnimByteArray(false,createIndexTable()));
 				} catch (InterruptedException e1) {
-					controller.setStatusInfo("");
+					ganimedController.setStatusInfo("");
 					return;
 				}finally {
 					createAnimThread=null;
@@ -126,69 +101,72 @@ public class ImageService {
 		//createAnimThread.start();
 	}
 
-	public byte[] createAnimByteArray(boolean showProgressBar) {
-		ImageType imageType=model.getImageType();
+
+	public Vector<Integer> createIndexTable() {
+		Vector<Integer> vecIndexTable=new Vector<Integer>();
+		EditorModel editorModel=ganimedModel.getEditorModel();
+		for(double index=editorModel.getCutLeft()-1;(index+0.5)<editorModel.getCutRight();index+=ganimedModel.getNumberOfImagesToSkip()) {
+			vecIndexTable.add((int)(index+0.5));
+		}
+		return vecIndexTable;
+	}
+
+	public byte[] createAnimByteArray(boolean showProgressBar,Vector<Integer> vecIndexTable) {
+		ImageType imageType=ganimedModel.getImageType();
 		try {
-			Vector<Integer> vecIndexTable=new Vector<Integer>();
-			for(double index=model.getEditorModel().getCutLeft();(index+0.5)<model.getEditorModel().getCutRight();index+=model.getNumberOfImagesToSkip()) {
-				vecIndexTable.add((int)(index+0.5));
-			}
 			if(showProgressBar) {
-				controller.enableProgressBar(vecIndexTable.size());
+				ganimedController.enableProgressBar(vecIndexTable.size());
 			}
 			AnimCreator animCreator;
 			if(imageType==ImageType.GIF) {
-				animCreator=new GifAnimCreator(model.getOptionsGifModel(),controller);
+				animCreator=new GifAnimCreator(ganimedModel.getOptionsGifModel(),ganimedController);
 			}else if(imageType==ImageType.PNG) {
-				animCreator=new PngAnimCreator(model.getOptionsPngModel(),controller);
+				animCreator=new PngAnimCreator(ganimedModel.getOptionsPngModel(),ganimedController,null);
 			}else {
-				throw new RuntimeException("unknown image type: "+model.getImageType());
+				throw new RuntimeException("unknown image type: "+ganimedModel.getImageType());
 			}
 			for(int i=0;i<vecIndexTable.size();i++) {
-				if(Thread.interrupted() || controller.isShutdownInProgress()) {
+				if(Thread.interrupted() || ganimedController.isShutdownInProgress()) {
 					return null;
 				}
-				ImageData imageData=model.getAnimationData().getImageData(vecIndexTable.get(i));
+				ImageData imageData=ganimedModel.getAnimationData().getLogicalImageData(vecIndexTable.get(i));
 				if(i<vecIndexTable.size()-1) {
-					animCreator.addImage(imageData, model.getEditorModel().getAnimDelay(), false);
+					animCreator.addImage(imageData, ganimedModel.getEditorModel().getAnimDelay(), false);
 				}else {
-					int endDelay=model.getEditorModel().getAnimEndDelay();
-					animCreator.addImage(imageData, endDelay>0?endDelay:model.getEditorModel().getAnimDelay(), false);
+					int endDelay=ganimedModel.getEditorModel().getAnimEndDelay();
+					animCreator.addImage(imageData, endDelay>0?endDelay:ganimedModel.getEditorModel().getAnimDelay(), false);
 				}
 				if(Thread.currentThread().isInterrupted()) {
-					controller.disableProgressBar();
+					ganimedController.disableProgressBar();
 					return null;
 				}
 			}
 			byte[] anim=animCreator.toByteArray();
 			if(showProgressBar) {
-				controller.disableProgressBar();
+				ganimedController.disableProgressBar();
 			}
 			return anim;
 		} catch (Exception e) {
-			controller.setStatusError("Error creating "+imageType.getName()+": "+e.getMessage());
+			ganimedController.setStatusError("Error creating "+imageType.getName()+": "+e.getMessage());
 			e.printStackTrace();
 			return null;
 		}
 	}
 
 	public void saveAs() {
-		Thread threadSave=new Thread() {
-			public void run() {
-				String imageTypename=model.getImageType().getName();
-				try {
-					byte[] data=createAnimByteArray(true);
-					FileTools.writeFile(model.getAnimFile(), data);
-					controller.setStatusInfo(imageTypename+" file saved: "+model.getAnimFile());
-				} catch (Exception e) {
-					controller.setStatusError("ERROR creating/saving "+imageTypename+" file: "+e.getMessage());
-					e.printStackTrace();
-				}
-			}
-		};
+		String imageTypename=ganimedModel.getImageType().getName();
+		SaveAnim worker=new SaveAnim(ganimedModel,ganimedController,this);
+		ProgressDialog.executeWithProgresssDialog(ganimedController.getJFrame() ,GanimedModel.PROGRAMNAME, "Save "+imageTypename, worker);
+	}
 
-		threadSave.setDaemon(true);
-		threadSave.start();
+	public void saveFrames() {
+		SaveImagesWorker worker=new SaveImagesWorker(ganimedModel,ganimedController,this);
+		ProgressDialog.executeWithProgresssDialog(ganimedController.getJFrame() ,GanimedModel.PROGRAMNAME, "Save Frames", worker);
+	}
+
+	public void saveRawFrames() {
+		SaveRawImagesWorker worker=new SaveRawImagesWorker(ganimedModel,ganimedController);
+		ProgressDialog.executeWithProgresssDialog(ganimedController.getJFrame() ,GanimedModel.PROGRAMNAME, "Save Raw Frames", worker);
 	}
 
 }

@@ -13,22 +13,27 @@ import lunartools.ganimed.panel.optionspanel.ImageType;
 public class MenubarController implements ActionListener{
 	private static final String ACTIONCOMMAND_SELECTFOLDER = "selectfolder";
 	private static final String ACTIONCOMMAND_SAVEAS = "saveas";
+	private static final String ACTIONCOMMAND_SAVEIMAGES = "saveframes";
+	private static final String ACTIONCOMMAND_SAVERAWIMAGES = "saveRawFrames";
+	private static final String ACTIONCOMMAND_CLOSEIMAGES = "closer";
 	private static final String ACTIONCOMMAND_ABOUT = "about";
 	private static final String ACTIONCOMMAND_EXIT = "exit";
 
-	@SuppressWarnings("unused")
-	private GanimedModel model;
-	private GanimedView view;
+	private GanimedModel ganimedModel;
+	private GanimedView ganimedView;
 
 	private MenuItem menuItem_SelectFolder;
 	protected MenuItem menuItem_SaveAs;
+	protected MenuItem menuItem_SaveRawFrames;
+	protected MenuItem menuItem_SaveFrames;
+	protected MenuItem menuItem_Clear;
 
 	private CheckboxMenuItemGroup checkboxMenuItemGroupImageType;
 
-	public MenubarController(GanimedModel model,GanimedView view) {
-		this.model=model;
-		this.view=view;
-		checkboxMenuItemGroupImageType=new CheckboxMenuItemGroup(model,view);
+	public MenubarController(GanimedModel ganimdeModel,GanimedView ganimdedView) {
+		this.ganimedModel=ganimdeModel;
+		this.ganimedView=ganimdedView;
+		checkboxMenuItemGroupImageType=new CheckboxMenuItemGroup(ganimdeModel,ganimdedView);
 	}
 
 	public MenuBar createMenubar() {
@@ -52,6 +57,19 @@ public class MenubarController implements ActionListener{
 		menuItem_SaveAs.setActionCommand(ACTIONCOMMAND_SAVEAS);
 		menuItem_SaveAs.setEnabled(false);
 		menu.add(menuItem_SaveAs);
+		
+		menuItem_SaveRawFrames=new MenuItem("Save Raw Images");
+		menuItem_SaveRawFrames.setActionCommand(ACTIONCOMMAND_SAVERAWIMAGES);
+		menu.add(menuItem_SaveRawFrames);
+
+		menuItem_SaveFrames=new MenuItem("Save Images");
+		menuItem_SaveFrames.setActionCommand(ACTIONCOMMAND_SAVEIMAGES);
+		menu.add(menuItem_SaveFrames);
+
+		MenuItem menuItem_Clear=new MenuItem("Close Images");
+		menuItem_Clear.setActionCommand(ACTIONCOMMAND_CLOSEIMAGES);
+		menuItem_Clear.setEnabled(true);
+		menu.add(menuItem_Clear);
 
 		MenuItem menuItem=new MenuItem("Exit");
 		menuItem.setActionCommand(ACTIONCOMMAND_EXIT);
@@ -67,12 +85,12 @@ public class MenubarController implements ActionListener{
 		Menu menuItemImageType=new Menu("Image Type");
 		menuOptions.add(menuItemImageType);
 
-		for(ImageType imageType:model.getImageTypes()) {
+		for(ImageType imageType:ganimedModel.getImageTypes()) {
 			final String imageTypeName=imageType.getName();
 			CheckboxMenuItem checkboxMenuItem=new CheckboxMenuItem(imageTypeName);
 			checkboxMenuItem.setActionCommand(imageTypeName);
 			menuItemImageType.add(checkboxMenuItem);
-			checkboxMenuItem.setState(imageType==model.getImageType());
+			checkboxMenuItem.setState(imageType==ganimedModel.getImageType());
 			checkboxMenuItemGroupImageType.addCheckboxMenuItem(checkboxMenuItem,imageType);
 
 		}
@@ -92,13 +110,19 @@ public class MenubarController implements ActionListener{
 	public void actionPerformed(ActionEvent event){
 		String actionCommand=event.getActionCommand();
 		if(actionCommand.equals(ACTIONCOMMAND_EXIT)){
-			view.sendMessage(SimpleEvents.EXIT);
+			ganimedView.sendMessage(SimpleEvents.EXIT);
 		}else if(actionCommand.equals(ACTIONCOMMAND_SELECTFOLDER)){
-			view.getjPanelSelect().getLoaderView().selectImageFolder();
+			ganimedView.getImageSelectionView().selectImageFolder();
 		}else if(actionCommand.equals(ACTIONCOMMAND_SAVEAS)){
-			view.saveAs();
+			ganimedView.saveAs();
+		}else if(actionCommand.equals(ACTIONCOMMAND_SAVEIMAGES)){
+			ganimedView.saveImages();
+		}else if(actionCommand.equals(ACTIONCOMMAND_SAVERAWIMAGES)){
+			ganimedView.saveRawImages();
+		}else if(actionCommand.equals(ACTIONCOMMAND_CLOSEIMAGES)){
+			ganimedView.closeImages();
 		}else if(actionCommand.equals(ACTIONCOMMAND_ABOUT)){
-			view.showMessageboxAbout();
+			ganimedView.showMessageboxAbout();
 		}
 	}
 

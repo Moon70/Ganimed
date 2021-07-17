@@ -41,4 +41,5 @@ public class EditorAdjustmentListener implements AdjustmentListener{
 		}
 	}
 
+	
 }

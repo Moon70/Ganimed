@@ -8,4 +8,5 @@ public interface AnimCreator {
 
 	public byte[] toByteArray() throws IOException;
 
+	
 }

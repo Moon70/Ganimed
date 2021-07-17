@@ -6,6 +6,7 @@ import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
@@ -25,15 +26,15 @@ import lunartools.ObservableJFrame;
 import lunartools.ScreenTools;
 import lunartools.ganimed.GanimedModel;
 import lunartools.ganimed.gui.editor.EditorView;
+import lunartools.ganimed.gui.selection.ImageSelectionView;
 import lunartools.ganimed.panel.optionspanel.ImageType;
 import lunartools.ganimed.panel.optionspanel.OptionsPanel;
-import lunartools.ganimed.panel.selectionpanel.SelectionPanel;
 
 public class GanimedView extends ObservableJFrame implements Observer{
 	private static Logger logger = LoggerFactory.getLogger(GanimedView.class);
-	private SelectionPanel jPanelSelect;
-	private EditorView jPanelEditor;
-	private OptionsPanel jPanelOptions;
+	private ImageSelectionView imageSelectionView;
+	private EditorView editorView;
+	private OptionsPanel optionsPanel;
 	private JLabel labelStatus;
 	private JProgressBar progressBar;
 
@@ -53,7 +54,7 @@ public class GanimedView extends ObservableJFrame implements Observer{
 		setResizable(true);
 		this.model=gameModel;
 		this.model.addObserver(this);
-		this.model.getLoaderModel().addObserver(this);
+		this.model.getImageSelectionModel().addObserver(this);
 		this.model.getEditorModel().addObserver(this);
 		this.model.getOptionsGifModel().addObserver(this);
 		this.model.getOptionsPngModel().addObserver(this);
@@ -65,23 +66,18 @@ public class GanimedView extends ObservableJFrame implements Observer{
 			}
 		});
 
-		jPanelSelect=new SelectionPanel(model,this);
-		jPanelEditor=new EditorView(model,this);
-		jPanelOptions=new OptionsPanel(model,this);
+		imageSelectionView=new ImageSelectionView(gameModel, this);
+		editorView=new EditorView(model,this);
+		optionsPanel=new OptionsPanel(model,this);
 
 		JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);
-		tabs.setSize(jPanelEditor.getWidth()+tabWidth,jPanelEditor.getHeight());
-		//add(jPanelEditor);
+		tabs.setSize(editorView.getWidth()+tabWidth,editorView.getHeight());
 
-		tabs.addTab("Select images", jPanelSelect);
-		tabs.addTab("Editor", jPanelEditor);
-		tabs.addTab("Options", jPanelOptions);
-		//		add(tabs);
+		tabs.addTab("Select images", imageSelectionView);
+		tabs.addTab("Editor", editorView);
+		tabs.addTab("Options", optionsPanel);
 		getContentPane().add(tabs);
 
-		//		KeyListener keyListener=new GanimedKeyListener(model,this);
-		//		AdjustmentListener adjustmentlistener=new GanimedAdjustmentListener(model, this);
-		//		
 		int xLabel1=12;
 		int xField1=90;
 		int y=178;
@@ -125,9 +121,8 @@ public class GanimedView extends ObservableJFrame implements Observer{
 			refreshGui();
 		}else if(object.equals(SimpleEvents.MODEL_IMAGETYPECHANGED)) {
 			menubarController.imageTypeChanged();
-			jPanelOptions.refreshGui();
+			optionsPanel.refreshGui();
 		}else if(object.equals(SimpleEvents.MODEL_IMAGESCHANGED)) {
-			menubarController.menuItem_SaveAs.setEnabled(true);
 			refreshGui();
 			resizeFrame();
 		}else if(object.equals(SimpleEvents.MODEL_REFRESH_SELECTION_GUI)) {
@@ -153,20 +148,21 @@ public class GanimedView extends ObservableJFrame implements Observer{
 	}
 
 	private void refreshGui() {
-		jPanelSelect.refreshGui();
-		jPanelEditor.refreshGui();
-		jPanelOptions.refreshGui();
-		clearStatus();
+		menubarController.menuItem_SaveAs.setEnabled(model.isAnimationDataAvailable());
+		menubarController.menuItem_SaveRawFrames.setEnabled(model.isAnimationDataAvailable() && model.getAnimationData().isCaptured());
+		menubarController.menuItem_SaveFrames.setEnabled(model.isAnimationDataAvailable());
+		
+		imageSelectionView.refreshGui();
+		editorView.refreshGui();
+		optionsPanel.refreshGui();
 	}
 
 	private void refreshSelectionGui() {
-		jPanelSelect.refreshGui();
-		clearStatus();
+		imageSelectionView.refreshGui();
 	}
 
 	private void refreshOptionsGui() {
-		jPanelOptions.refreshGui();
-		clearStatus();
+		optionsPanel.refreshGui();
 	}
 
 	public void sendMessage(Object message) {
@@ -254,16 +250,94 @@ public class GanimedView extends ObservableJFrame implements Observer{
 		progressBar.setVisible(false);
 	}
 
-	public SelectionPanel getjPanelSelect() {
-		return jPanelSelect;
+	public ImageSelectionView getImageSelectionView() {
+		return imageSelectionView;
 	}
 
 	public EditorView getjPanelEditor() {
-		return jPanelEditor;
+		return editorView;
 	}
 
 	public OptionsPanel getjPanelOptions() {
-		return jPanelOptions;
+		return optionsPanel;
+	}
+
+	public void closeImages() {
+		model.setImageData(null);
+		refreshSelectionGui();
+		System.gc();
+	}
+
+	private File fileSelector(FileFilter fileFilter,File lastFile) {
+		final JFileChooser fileChooser= new JFileChooser() {
+			public void updateUI() {
+				putClientProperty("FileChooser.useShellFolder", Boolean.FALSE);
+				super.updateUI();
+			}
+		};
+		fileChooser.setAcceptAllFileFilterUsed(false);
+		fileChooser.addChoosableFileFilter(fileFilter);
+		fileChooser.setFileFilter(fileFilter);
+		if(lastFile!=null) {
+			fileChooser.setCurrentDirectory(lastFile.getParentFile());
+		}
+		int rc=fileChooser.showSaveDialog(this);
+		if(rc==JFileChooser.APPROVE_OPTION) {
+			return fileChooser.getSelectedFile();
+		}
+		return null;
+	}
+	
+	private boolean filesBeginningWithPrefixExist(File folder, String prefix) {
+		File[] files=folder.listFiles(new FilenameFilter() {
+			
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.toLowerCase().startsWith(prefix);
+			}
+			
+		});
+		return files.length>0;
+	}
+	
+	public void saveRawImages() {
+		File fileRawImage=fileSelector(new ImageFileFilter("PNG","png"),model.getRawImagesFile());
+		if(fileRawImage!=null) {
+			File fileFolder=fileRawImage.getParentFile();
+			String filename=fileRawImage.getName();
+			if(filename.toLowerCase().endsWith(".png")) {
+				filename=filename.substring(0, filename.length()-4);
+			}
+			filename+="_";
+			if(filesBeginningWithPrefixExist(fileFolder,filename)) {
+				if(JOptionPane.showOptionDialog(this, "File(s) already exists, OK to overwrite?\n"+fileRawImage.getAbsolutePath(), "Ganimed", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null)!=JOptionPane.OK_OPTION) {
+					setStatusInfo("'save raw images' canceled");
+					return;
+				}
+			}
+			model.setRawImagesFile(fileRawImage);
+			sendMessage(SimpleEvents.VIEW_SAVERAWFRAMES);
+		}
+	}
+	
+	public void saveImages() {
+		File fileImage=fileSelector(new ImageFileFilter("PNG","png"),model.getImagesFile());
+		if(fileImage!=null) {
+			File fileFolder=fileImage.getParentFile();
+			String filename=fileImage.getName();
+			if(filename.toLowerCase().endsWith(".png")) {
+				filename=filename.substring(0, filename.length()-4);
+			}
+			filename+="_";
+			if(filesBeginningWithPrefixExist(fileFolder,filename)) {
+				if(JOptionPane.showOptionDialog(this, "File(s) already exists, OK to overwrite?\n"+fileImage.getAbsolutePath(), "Ganimed", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null)!=JOptionPane.OK_OPTION) {
+					setStatusInfo("'save images' canceled");
+					return;
+				}
+			}
+			model.setImagesFile(fileImage);
+			sendMessage(SimpleEvents.VIEW_SAVEFRAMES);
+		}
 	}
 
 }

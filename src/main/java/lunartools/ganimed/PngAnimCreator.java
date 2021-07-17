@@ -11,13 +11,18 @@ import lunartools.ganimed.gui.optionscolourreduction.model.ColourReductionModel;
 import lunartools.ganimed.gui.optionspng.model.OptionsPngModel;
 import lunartools.ganimed.gui.optionspng.model.PngEncoderType;
 
-public class PngAnimCreator implements AnimCreator, ProgressCallback{
+public class PngAnimCreator implements AnimCreator{
 	private GanimedController ganimedController;
+	private ProgressCallback progressCallback;
 	private Png apng;
 	private ApngBuilder apngBuilder;
-
-	public PngAnimCreator(OptionsPngModel optionsPngModel,GanimedController ganimedController) {
+	private ImageData previousImageData;
+	private Png previousPng;
+	private byte[] baPNG;
+	
+	public PngAnimCreator(OptionsPngModel optionsPngModel,GanimedController ganimedController,ProgressCallback progressCallback) {
 		this.ganimedController=ganimedController;
+		this.progressCallback=progressCallback;
 
 		apngBuilder=new ApngBuilder();
 		apngBuilder.enablePngEncoder(optionsPngModel.getPngEncoderType()==PngEncoderType.Ganimed);
@@ -85,10 +90,15 @@ public class PngAnimCreator implements AnimCreator, ProgressCallback{
 
 	@Override
 	public void addImage(ImageData imageData, int delay, boolean loop) throws IOException {
+		if(imageData==previousImageData) {
+			previousPng.setDelay(previousPng.getDelay()+delay);
+			return;
+		}
+		previousImageData=imageData;
 		Png png;
 		png=apngBuilder.buildPng(imageData.getResultBufferedImage());
 		png.setDelay(delay);
-
+		previousPng=png;
 		if(apng==null) {
 			apng=png;
 		}else {
@@ -98,12 +108,11 @@ public class PngAnimCreator implements AnimCreator, ProgressCallback{
 
 	@Override
 	public byte[] toByteArray() throws IOException {
-		return apng.toByteArray(this);
-	}
-
-	@Override
-	public void setProgressStep(int step) {
-		ganimedController.setProgressBarValue(step,"creating PNG...");
+		if(baPNG==null) {
+			apng.addText("Software", "created with "+GanimedModel.PROGRAMNAME+" "+GanimedModel.determineProgramVersion(),false);
+			baPNG=apng.toByteArray(progressCallback);
+		}
+		return baPNG;
 	}
 
 }

@@ -4,26 +4,29 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import lunartools.ganimed.AnimationData;
 import lunartools.ganimed.GanimedModel;
-import lunartools.ganimed.ImageData;
 import lunartools.ganimed.ImageService;
 
 public class AnimationThread extends Thread{
-	private GanimedModel model;
-	private GanimedView view;
+	private static Logger logger = LoggerFactory.getLogger(AnimationThread.class);
+	private GanimedModel ganimedModel;
+	private GanimedView ganimedView;
 	private ImageService imageService;
 	private volatile boolean shutdown;
 
-	public AnimationThread(GanimedModel model,GanimedView view,ImageService imageService) {
-		this.model=model;
-		this.view=view;
+	public AnimationThread(GanimedModel ganimedModel,GanimedView ganimedView,ImageService imageService) {
+		this.ganimedModel=ganimedModel;
+		this.ganimedView=ganimedView;
 		this.imageService=imageService;
 	}
 
 	@Override
 	public void run() {
 		double index=0;
-		ImageData[] bufferedImages;
 		long timestamp;
 		long sleep;
 		Dimension lastResultImageSize=null;
@@ -31,28 +34,34 @@ public class AnimationThread extends Thread{
 		int offsetY=240+30;
 		int cutLeft;
 		int cutRight;
+		AnimationData animationData;
 		while(!shutdown){
 			timestamp=System.currentTimeMillis();
-			bufferedImages=model.getImageDataArray();
-			cutLeft=model.getEditorModel().getCutLeft()-1;
-			cutRight=model.getEditorModel().getCutRight()-1;
-			if(bufferedImages!=null) {
+			animationData=ganimedModel.getAnimationData();
+			cutLeft=ganimedModel.getEditorModel().getCutLeft()-1;
+			cutRight=ganimedModel.getEditorModel().getCutRight()-1;
+			Graphics graphics=ganimedView.getGraphics();
+			if(animationData!=null) {
 				resultImageSize=imageService.getResultImageSize();
-				int offsetX=(view.getWidth()-resultImageSize.width)>>1;
+				int offsetX=(ganimedView.getWidth()-resultImageSize.width)>>1;
 
-				Graphics graphics=view.getGraphics();
 				if(lastResultImageSize==null || lastResultImageSize.width!=resultImageSize.width ||lastResultImageSize.height!=resultImageSize.height) {
-					graphics.setColor(view.getBackground());
-					graphics.fillRect(0,offsetY,view.getWidth(),view.getHeight()-offsetY);
+					graphics.setColor(ganimedView.getBackground());
+					graphics.fillRect(0,offsetY,ganimedView.getWidth(),ganimedView.getHeight()-offsetY);
 					lastResultImageSize=resultImageSize;
 				}
-				BufferedImage bufferedImage=imageService.getResultBufferedImage((int)index);
+				BufferedImage bufferedImage=imageService.getLogicalResultBufferedImage((int)index);
 				graphics.drawImage(bufferedImage,offsetX, offsetY,null);
-				index+=model.getNumberOfImagesToSkip();
-				if(index>=cutRight) {
+				index+=ganimedModel.getNumberOfImagesToSkip();
+				if(index>cutRight) {
 					index=cutLeft;
 				}
 			}else {
+				if(lastResultImageSize!=null) {
+					lastResultImageSize=null;
+					graphics.setColor(ganimedView.getBackground());
+					graphics.fillRect(0,offsetY,ganimedView.getWidth(),ganimedView.getHeight()-offsetY);
+				}
 				index=0;
 				try {
 					Thread.sleep(1000);
@@ -61,9 +70,9 @@ public class AnimationThread extends Thread{
 				}
 			}
 			try {
-				sleep=timestamp-System.currentTimeMillis()+model.getEditorModel().getAnimDelay();
+				sleep=timestamp-System.currentTimeMillis()+ganimedModel.getEditorModel().getAnimDelay();
 				if(index==0) {
-					sleep+=model.getEditorModel().getAnimEndDelay();
+					sleep+=ganimedModel.getEditorModel().getAnimEndDelay();
 				}
 				if(sleep>0) {
 					Thread.sleep(sleep);
@@ -76,6 +85,7 @@ public class AnimationThread extends Thread{
 
 	public void shutdown() {
 		shutdown=true;
+		logger.debug("shutdown");
 	}
 
 }

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>lunartools</groupId>
   <artifactId>ganimed</artifactId>
-  <version>1.4-snapshot</version>
+  <version>1.5-snapshot</version>
   <name>Ganimed</name>
   <description>Creates a GIF or APNG animation from a series of single image files</description>
 	<properties>
@@ -61,6 +61,13 @@
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-api</artifactId>
 		    <version>1.7.30</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		    <version>1.7.30</version>
+		    <scope>provided</scope>
 		</dependency>
 		<!-- https://github.com/Moon70/LunarTools/packages -->
 		<dependency>

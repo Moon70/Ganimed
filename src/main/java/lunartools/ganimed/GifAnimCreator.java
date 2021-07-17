@@ -29,8 +29,10 @@ public class GifAnimCreator implements AnimCreator{
 	private ImageWriteParam imageWriteParams;
 	private IIOMetadata iooMetadata;
 	private int delay;
-	private int progressStep;
 	private GPAC gpac;
+	private boolean loop;
+	private ImageData previousImageData;
+	private int currentImageDelay;
 
 	public GifAnimCreator(OptionsGifModel optionsGifModel,GanimedController ganimedController) {
 		this.ganimedController=ganimedController;
@@ -80,12 +82,26 @@ public class GifAnimCreator implements AnimCreator{
 	}
 
 	public void addImage(ImageData imageData, int delay, boolean loop) throws IOException {
-		ganimedController.setProgressBarValue(progressStep++,"creating GIF...");
-		BufferedImage bufferedImage=imageData.getResultBufferedImage();
+		this.loop=loop;
+		if(previousImageData==null) {
+			previousImageData=imageData;
+			currentImageDelay=delay;
+			return;
+		}
+		if(previousImageData==imageData) {
+			currentImageDelay+=delay;
+			return;
+		}
+		writeCurrentImage();
+		previousImageData=imageData;
+		currentImageDelay=delay;
+	}
 
+	private void writeCurrentImage() throws IOException {
+		BufferedImage bufferedImage=previousImageData.getResultBufferedImage();
 		gpac.quantizeColours(bufferedImage,256);
 		if(iooMetadata==null) {
-			this.delay=delay;
+			this.delay=currentImageDelay;
 			baos=new ByteArrayOutputStream();
 			imageOutputStream = new MemoryCacheImageOutputStream(baos);
 			ImageTypeSpecifier imageTypeSpecifier = ImageTypeSpecifier.createFromBufferedImageType(bufferedImage.getType());
@@ -96,15 +112,17 @@ public class GifAnimCreator implements AnimCreator{
 			imageWriter.setOutput(imageOutputStream);
 			imageWriter.prepareWriteSequence(null);
 		}
-		if(this.delay!=delay) {
-			this.delay=delay;
+		if(this.delay!=currentImageDelay) {
+			this.delay=currentImageDelay;
 			configureRootMetadata(iooMetadata,delay, loop);
 		}
 
 		imageWriter.writeToSequence(new IIOImage(bufferedImage, null, iooMetadata), imageWriteParams);
+		previousImageData=null;
 	}
-
+	
 	public byte[] toByteArray() throws IOException {
+		writeCurrentImage();
 		imageWriter.endWriteSequence();
 		imageOutputStream.close();
 		return baos.toByteArray();
@@ -122,7 +140,7 @@ public class GifAnimCreator implements AnimCreator{
 		graphicsControlExtensionNode.setAttribute("transparentColorIndex", "0");
 
 		IIOMetadataNode commentsNode = getNode(root, "CommentExtensions");
-		commentsNode.setAttribute("CommentExtension", "Created with Ganimed 1.0");
+		commentsNode.setAttribute("CommentExtension", "created with "+GanimedModel.PROGRAMNAME+" "+GanimedModel.determineProgramVersion());
 
 		IIOMetadataNode appExtensionsNode = getNode(root, "ApplicationExtensions");
 		IIOMetadataNode child = new IIOMetadataNode("ApplicationExtension");

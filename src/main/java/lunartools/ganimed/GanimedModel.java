@@ -8,45 +8,45 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import lunartools.ganimed.gui.SimpleEvents;
-import lunartools.ganimed.gui.capture.model.CaptureModel;
 import lunartools.ganimed.gui.editor.model.EditorModel;
-import lunartools.ganimed.gui.loader.model.LoaderModel;
 import lunartools.ganimed.gui.optionsgif.model.OptionsGifModel;
 import lunartools.ganimed.gui.optionspng.model.OptionsPngModel;
+import lunartools.ganimed.gui.selection.model.ImageSelectionModel;
 import lunartools.ganimed.panel.optionspanel.ImageType;
-import lunartools.ganimed.panel.selectionpanel.SelectionType;
 
 public class GanimedModel extends Observable{
+	private static Logger logger = LoggerFactory.getLogger(GanimedModel.class);
 	public static final String PROGRAMNAME = "Ganimed";
 
-	private SelectionType selectionType;
 	private ImageType imageType;
 
 	private File fileAnimFolder;
 	private File fileAnim;
+	private File fileRawImages;
+	private File fileImages;
 
 	private double numberOfImagesToSkip;
 
 	private int imageWidth;
 	private int imageHeight;
 
-	private AnimationData bufferedImages;
+	private AnimationData animationData;
 	private byte[] bytearrayAnim;
 	private static String versionProgram;
 	private ArrayList<ImageType> imageTypes;
 
-	private LoaderModel loaderModel;
-	private CaptureModel captureModel;
+	private ImageSelectionModel imageSelectionModel;
 	private EditorModel editorModel;
 	private OptionsPngModel optionsPngModel;
 	private OptionsGifModel optionsGifModel;
 
 	public GanimedModel() {
-		loaderModel=new LoaderModel(this);
-		captureModel=new CaptureModel(this);
+		imageSelectionModel=new ImageSelectionModel(this);
 		editorModel=new EditorModel(this);
-		setSelectionType(SelectionType.LOAD);
 		setImageType(ImageType.GIF);
 		optionsPngModel=new OptionsPngModel();
 		optionsGifModel=new OptionsGifModel();
@@ -90,6 +90,22 @@ public class GanimedModel extends Observable{
 		}
 	}
 
+	public File getRawImagesFile() {
+		return fileRawImages;
+	}
+
+	public void setRawImagesFile(File file) {
+		this.fileRawImages=file;
+	}
+
+	public File getImagesFile() {
+		return fileImages;
+	}
+
+	public void setImagesFile(File file) {
+		this.fileImages=file;
+	}
+
 	public File getAnimFile() {
 		return fileAnim;
 	}
@@ -115,46 +131,18 @@ public class GanimedModel extends Observable{
 	}
 
 	public void setImageData(AnimationData animationData) {
-		this.bufferedImages=animationData;
+		this.animationData=animationData;
+		logger.trace("setAnimationData: "+this.animationData);
 		if(animationData!=null) {
 			this.imageWidth=animationData.getWidth();
 			this.imageHeight=animationData.getHeight();
-			//			cutLeft=1;
-			//			cutLeftMin=1;
-			//			cutLeftMax=animationData.size()-MINIMUM_ANIM_FRAMECOUNT;
-			//			cutRight=animationData.size();
-			//			cutRightMin=1+MINIMUM_ANIM_FRAMECOUNT;
-			//			cutRightMax=animationData.size();
 			editorModel.reset(animationData);
-			//			cropLeft=0;
-			//			cropLeftMin=0;
-			//			cropLeftMax=this.imageWidth-MINIMUM_ANIM_SIZE;
-			//			cropTop=0;
-			//			cropTopMin=0;
-			//			cropTopMax=this.imageHeight-MINIMUM_ANIM_SIZE;
-			//			cropRight=this.imageWidth;
-			//			cropRightMin=MINIMUM_ANIM_SIZE;
-			//			cropRightMax=this.imageWidth;
-			//			cropBottom=this.imageHeight;
-			//			cropBottomMin=0;
-			//			cropBottomMax=this.imageHeight-MINIMUM_ANIM_SIZE;
-			//			resizePercent=100;
-			//			resizeMin=1;
-			//			resizeMax=101;
-			//			if(animFps==0) {
-			//				setAnimFps(loaderModel.getImagesFps()>>1);
-			//			}
 			sendMessage(SimpleEvents.MODEL_IMAGESCHANGED);
 		}
 	}
 
 	public AnimationData getAnimationData() {
-		return bufferedImages;
-	}
-
-	@Deprecated
-	public ImageData[] getImageDataArray() {
-		return bufferedImages==null?null:bufferedImages.getAsArray();
+		return animationData;
 	}
 
 	private void sendMessage(Object message) {
@@ -169,18 +157,6 @@ public class GanimedModel extends Observable{
 	public void setBytearrayAnim(byte[] bytearrayAnim) {
 		this.bytearrayAnim = bytearrayAnim;
 		sendMessage(SimpleEvents.MODEL_ANIMBYTEARRAYCHANGED);
-	}
-
-	public SelectionType getSelectionType() {
-		return selectionType;
-	}
-
-	public void setSelectionType(SelectionType selectionType) {
-		if(this.selectionType==selectionType) {
-			return;
-		}
-		this.selectionType = selectionType;
-		sendMessage(SimpleEvents.MODEL_SELECTIONTYPECHANGED);
 	}
 
 	public ImageType getImageType() {
@@ -238,15 +214,11 @@ public class GanimedModel extends Observable{
 
 	//TODO: ask AnimationData if animation data is available, or better move this method to AnimationData...
 	public boolean isAnimationDataAvailable() {
-		return loaderModel.getImageFolder()!=null;
+		return animationData!=null && animationData.size()>0;
 	}
 
-	public LoaderModel getLoaderModel() {
-		return loaderModel;
-	}
-
-	public CaptureModel getCaptureModel() {
-		return captureModel;
+	public ImageSelectionModel getImageSelectionModel() {
+		return imageSelectionModel;
 	}
 
 	public EditorModel getEditorModel() {
@@ -260,7 +232,7 @@ public class GanimedModel extends Observable{
 			editorModel.setAnimDelay(0);
 		}else {
 			editorModel.setAnimDelay((int)(1000.0/animFps+0.5));
-			setNumberOfImagesToSkip(1.0*getLoaderModel().getImagesFps()/animFps);
+			setNumberOfImagesToSkip(1.0*getImageSelectionModel().getImagesFps()/animFps);
 		}
 		sendMessage(SimpleEvents.MODEL_ANIMPLAYBACKVALUESCHANGED);
 	}
