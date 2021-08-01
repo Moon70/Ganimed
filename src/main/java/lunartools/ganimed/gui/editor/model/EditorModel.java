@@ -29,8 +29,6 @@ public class EditorModel extends Observable{
 	private int cropRightMin;
 	private int cropRightMax;
 	private int resizePercent;
-	private int resizeMin;
-	private int resizeMax;
 	private int animFps;
 	private int animDelay;
 	private int animEndDelay;
@@ -99,14 +97,13 @@ public class EditorModel extends Observable{
 		return cutRightMax;
 	}
 
-	//TODO: refactor
 	public void reset(AnimationData animationData) {
 		cutLeft=1;
 		cutLeftMin=1;
 		cutLeftMax=animationData.logicalSize()-MINIMUM_ANIM_FRAMECOUNT;
 		cutRight=animationData.logicalSize();
 		cutRightMin=1+MINIMUM_ANIM_FRAMECOUNT;
-		cutRightMax=animationData.logicalSize()+1;
+		cutRightMax=animationData.logicalSize();
 		
 		cropTop=1;
 		cropTopMin=1;
@@ -114,15 +111,16 @@ public class EditorModel extends Observable{
 		cropBottom=animationData.getHeight();
 		cropBottomMin=MINIMUM_ANIM_SIZE;
 		cropBottomMax=animationData.getHeight();
+
 		cropLeft=1;
 		cropLeftMin=1;
 		cropLeftMax=animationData.getWidth()-MINIMUM_ANIM_SIZE;
 		cropRight=animationData.getWidth();
 		cropRightMin=MINIMUM_ANIM_SIZE;
 		cropRightMax=animationData.getWidth();
+
 		resizePercent=100;
-		resizeMin=1;
-		resizeMax=101;
+		
 		if(animFps==0) {
 			setAnimFps(ganimedModel.getImageSelectionModel().getImagesFps()>>1);
 		}
@@ -250,12 +248,12 @@ public class EditorModel extends Observable{
 		return resizePercent;
 	}
 
-	public int getResizeMin() {
-		return resizeMin;
+	public int getResizePercentMin() {
+		return 1;
 	}
 
-	public int getResizeMax() {
-		return resizeMax;
+	public int getResizePercentMax() {
+		return 100;
 	}
 
 	public void setAnimFps(int fps) {
@@ -270,8 +268,9 @@ public class EditorModel extends Observable{
 			fps=imagesFps;
 		}
 		this.animFps=fps;
-		//TODO: refactor
-		ganimedModel.calculateAnimPlaybackParameter();
+		setAnimDelay((int)(1000.0/this.animFps+0.5));
+		ganimedModel.setAnimationIncrement(1.0*ganimedModel.getImageSelectionModel().getImagesFps()/this.animFps);
+		sendMessage(SimpleEvents.MODEL_ANIMPLAYBACKVALUESCHANGED);
 	}
 
 	public int getAnimFps() {
@@ -283,7 +282,7 @@ public class EditorModel extends Observable{
 	}
 
 	public int getAnimFpsMax() {
-		return ganimedModel.getImageSelectionModel().getImagesFps()+1;
+		return ganimedModel.getImageSelectionModel().getImagesFps();
 	}
 
 	public void setAnimDelay(int delay) {
@@ -303,9 +302,14 @@ public class EditorModel extends Observable{
 	public int getAnimDelay() {
 		return animDelay;
 	}
-	//TODO: getAnimDelayMin()
+	
+	public int getAnimDelayMin() {
+		return 16;
+	}
 
-	//TODO: getAnimDelayMax()
+	public int getAnimDelayMax() {
+		return 1000;
+	}
 
 
 	public void setAnimEndDelay(int delay) {
@@ -326,10 +330,20 @@ public class EditorModel extends Observable{
 		return animEndDelay;
 	}
 
-	//TODO: getAnimEndDelayMin()
+	public int getAnimEndDelayMin() {
+		return 0;
+	}
 
 	public int getAnimEndDelayMax() {
 		return animEndDelayMax;
+	}
+
+	public boolean isImagedataChanged() {
+		return getCropTop()!=getCropTopMin() ||
+				getCropBottom()!=getCropBottomMax() ||
+				getCropLeft()!=getCropLeftMin() ||
+				getCropRight()!=getCropRightMax() ||
+				getResizePercent()!=getResizePercentMax();
 	}
 
 }

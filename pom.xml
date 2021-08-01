@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>lunartools</groupId>
   <artifactId>ganimed</artifactId>
-  <version>1.5-snapshot</version>
+  <version>1.5.1-snapshot</version>
   <name>Ganimed</name>
   <description>Creates a GIF or APNG animation from a series of single image files</description>
 	<properties>

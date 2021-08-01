@@ -18,15 +18,15 @@ import lunartools.ganimed.ImageService;
 import lunartools.ganimed.PngAnimCreator;
 import lunartools.ganimed.panel.optionspanel.ImageType;
 
-public class SaveAnim extends SwingWorker<Void, Void> implements ProgressCallback{
-	private static Logger logger = LoggerFactory.getLogger(SaveAnim.class);
+public class SaveAnimWorker extends SwingWorker<Void, Void> implements ProgressCallback{
+	private static Logger logger = LoggerFactory.getLogger(SaveAnimWorker.class);
 	private GanimedModel ganimedModel;
 	private GanimedController ganimedController;
 	private ImageService imageService;
-	private int progressX;
-	private int progressStep;
+	private float progressX;
+	private float progressStep;
 
-	public SaveAnim(GanimedModel ganimedModel, GanimedController ganimedController,ImageService imageService) {
+	public SaveAnimWorker(GanimedModel ganimedModel, GanimedController ganimedController,ImageService imageService) {
 		this.ganimedModel=ganimedModel;
 		this.ganimedController=ganimedController;
 		this.imageService=imageService;
@@ -41,10 +41,10 @@ public class SaveAnim extends SwingWorker<Void, Void> implements ProgressCallbac
 			Vector<Integer> vecIndexTable=imageService.createIndexTable();
 			int size=vecIndexTable.size();
 			progressX=0;
-			progressStep=6400/size;
+			progressStep=100.0f/size;
 			setProgress(0);
 			AnimCreator animCreator;
-			//ToDo: A factory should create the AnimCreator. Before that, both GifAnimCreator and PngAnimCreator should use a Listener to monitor progress.
+			//TODO: A factory should create the AnimCreator. Before that, both GifAnimCreator and PngAnimCreator should use a Listener to monitor progress.
 			if(imageType==ImageType.GIF) {
 				animCreator=new GifAnimCreator(ganimedModel.getOptionsGifModel(),ganimedController);
 			}else if(imageType==ImageType.PNG) {
@@ -57,7 +57,7 @@ public class SaveAnim extends SwingWorker<Void, Void> implements ProgressCallbac
 					return null;
 				}
 				if(imageType==ImageType.GIF) {
-					setProgress((progressX+=progressStep)>>6);
+					setProgress((int)(progressX+=progressStep));
 				}
 				ImageData imageData=ganimedModel.getAnimationData().getLogicalImageData(vecIndexTable.get(i));
 				if(i<size-1) {
@@ -74,7 +74,7 @@ public class SaveAnim extends SwingWorker<Void, Void> implements ProgressCallbac
 
 		} catch (Exception e) {
 			logger.error("error while saving animation",e);
-			ganimedController.setStatusError("error while saving animation"+e.getMessage());
+			ganimedController.setStatusError("error while saving animation: "+e.getMessage());
 		}
 		return null;
 	}
@@ -86,7 +86,7 @@ public class SaveAnim extends SwingWorker<Void, Void> implements ProgressCallbac
 
 	@Override
 	public void setProgressStep(int step) {
-		setProgress((progressX+=progressStep)>>6);
+		setProgress((int)(progressX+=progressStep));
 	}
 
 }

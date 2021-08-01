@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import lunartools.ganimed.gui.editor.model.EditorModel;
 import lunartools.ganimed.panel.optionspanel.ImageType;
 import lunartools.ganimed.worker.LoadImagesWorker;
-import lunartools.ganimed.worker.SaveAnim;
+import lunartools.ganimed.worker.SaveAnimWorker;
 import lunartools.ganimed.worker.SaveImagesWorker;
 import lunartools.ganimed.worker.SaveRawImagesWorker;
 import lunartools.progressdialog.ProgressDialog;
@@ -79,7 +79,7 @@ public class ImageService {
 				try {
 					createAnim_sleeping=true;
 					createAnim_sleepUntil=System.currentTimeMillis()+5000;
-					while(createAnim_sleepUntil>System.currentTimeMillis() || ganimedModel.getNumberOfImagesToSkip()==0) {
+					while(createAnim_sleepUntil>System.currentTimeMillis() || ganimedModel.getAnimationIncrement()==0) {
 						if(ganimedController.isShutdownInProgress()) {
 							return;
 						}
@@ -105,7 +105,7 @@ public class ImageService {
 	public Vector<Integer> createIndexTable() {
 		Vector<Integer> vecIndexTable=new Vector<Integer>();
 		EditorModel editorModel=ganimedModel.getEditorModel();
-		for(double index=editorModel.getCutLeft()-1;(index+0.5)<editorModel.getCutRight();index+=ganimedModel.getNumberOfImagesToSkip()) {
+		for(double index=editorModel.getCutLeft()-1;(index+0.5)<editorModel.getCutRight();index+=ganimedModel.getAnimationIncrement()) {
 			vecIndexTable.add((int)(index+0.5));
 		}
 		return vecIndexTable;
@@ -155,7 +155,7 @@ public class ImageService {
 
 	public void saveAs() {
 		String imageTypename=ganimedModel.getImageType().getName();
-		SaveAnim worker=new SaveAnim(ganimedModel,ganimedController,this);
+		SaveAnimWorker worker=new SaveAnimWorker(ganimedModel,ganimedController,this);
 		ProgressDialog.executeWithProgresssDialog(ganimedController.getJFrame() ,GanimedModel.PROGRAMNAME, "Save "+imageTypename, worker);
 	}
 

@@ -37,8 +37,8 @@ public class SaveImagesWorker extends SwingWorker<Void, Void> {
 			AnimationData animationdata=ganimedModel.getAnimationData();
 			Vector<Integer> vecIndexTable=imageService.createIndexTable();
 			int size=vecIndexTable.size();
-			int progressX=0;
-			int progressStep=6400/size;
+			float progressX=0;
+			float progressStep=100.0f/size;
 			setProgress(0);
 			File[] files=new File[size];
 			String filename=fileImages.getName();
@@ -57,7 +57,7 @@ public class SaveImagesWorker extends SwingWorker<Void, Void> {
 					return null;
 				}
 				firePropertyChange(ProgressDialog.PROPERTY_BAR1, null, "saving image "+(i+1)+" / "+size);
-				setProgress((progressX+=progressStep)>>6);
+				setProgress((int)(progressX+=progressStep));
 				BufferedImage bufferedImage=animationdata.getLogicalImageData(vecIndexTable.get(i)).getResultBufferedImage();
 				try {
 					ImageIO.write(bufferedImage, "PNG", files[i]);

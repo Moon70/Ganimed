@@ -11,6 +11,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.SwingConstants;
 
 import lunartools.ganimed.GanimedModel;
 import lunartools.ganimed.gui.GanimedView;
@@ -66,23 +67,14 @@ public class OptionsPngView extends JPanel{
 
 		y+=lineDistance;
 
-		label=new JLabel("Truecolour:");
+		label=new JLabel("PNG files:");
 		label.setBounds(xLabel1,y,100,lineHight);
 		add(label);
-		Vector<TruecolourBitsCount> trueColourOptions=new Vector<TruecolourBitsCount>();
-		trueColourOptions.add(TruecolourBitsCount.BIT24);
-		trueColourOptions.add(TruecolourBitsCount.BIT21);
-		trueColourOptions.add(TruecolourBitsCount.BIT18);
-		trueColourOptions.add(TruecolourBitsCount.BIT15);
-		trueColourOptions.add(TruecolourBitsCount.BIT12);
-		trueColourOptions.add(TruecolourBitsCount.BIT9);
-		trueColourOptions.add(TruecolourBitsCount.BIT6);
-		trueColourOptions.add(TruecolourBitsCount.BIT3);
-		comboBoxTruecolourOptions = new JComboBox<TruecolourBitsCount>(trueColourOptions);
-		comboBoxTruecolourOptions.setBounds(xField1,y,100,lineHight);
-		comboBoxTruecolourOptions.setMaximumRowCount(6);
-		comboBoxTruecolourOptions.addActionListener(actionListener);
-		add(comboBoxTruecolourOptions);
+
+		checkboxReEncodePng = new JCheckBox("re-encode PNG files");
+		checkboxReEncodePng.setBounds(xField1,y,250,lineHight);
+		checkboxReEncodePng.addActionListener(actionListener);
+		add(checkboxReEncodePng);
 
 		label=new JLabel("Colours:");
 		label.setBounds(xColumn2+xLabel1,y,100,lineHight);
@@ -117,12 +109,24 @@ public class OptionsPngView extends JPanel{
 
 		y+=lineDistance;
 
-
-		checkboxReEncodePng = new JCheckBox("re-encode PNG files");
-		checkboxReEncodePng.setBounds(xField1,y,250,lineHight);
-		checkboxReEncodePng.addActionListener(actionListener);
-		add(checkboxReEncodePng);
-
+		label=new JLabel("Truecolour:");
+		label.setBounds(xLabel1,y,100,lineHight);
+		add(label);
+		Vector<TruecolourBitsCount> trueColourOptions=new Vector<TruecolourBitsCount>();
+		trueColourOptions.add(TruecolourBitsCount.BIT24);
+		trueColourOptions.add(TruecolourBitsCount.BIT21);
+		trueColourOptions.add(TruecolourBitsCount.BIT18);
+		trueColourOptions.add(TruecolourBitsCount.BIT15);
+		trueColourOptions.add(TruecolourBitsCount.BIT12);
+		trueColourOptions.add(TruecolourBitsCount.BIT9);
+		trueColourOptions.add(TruecolourBitsCount.BIT6);
+		trueColourOptions.add(TruecolourBitsCount.BIT3);
+		comboBoxTruecolourOptions = new JComboBox<TruecolourBitsCount>(trueColourOptions);
+		comboBoxTruecolourOptions.setBounds(xField1,y,100,lineHight);
+		comboBoxTruecolourOptions.setMaximumRowCount(6);
+		comboBoxTruecolourOptions.addActionListener(actionListener);
+		add(comboBoxTruecolourOptions);
+		
 		y+=lineDistance;
 
 		checkboxUseTransparentPixel = new JCheckBox("use transparent pixel to optimize filesize");
@@ -156,31 +160,36 @@ public class OptionsPngView extends JPanel{
 	}
 
 	public void refreshGui() {
-		jRadioButtonPngEncoder.setEnabled(true);
-		jRadioButtonImageIO.setEnabled(true);
 		checkboxReEncodePng.setEnabled(true);
-		checkboxConvertToPalette.setEnabled(true);
-		comboBoxTruecolourOptions.setEnabled(true);
-
-		jRadioButtonPngEncoder.setSelected(optionsPngModel.getPngEncoderType()==PngEncoderType.Ganimed);
-		jRadioButtonImageIO.setSelected(optionsPngModel.getPngEncoderType()==PngEncoderType.Java);
 		checkboxReEncodePng.setSelected(optionsPngModel.isPngReencodingEnabled());
-		checkboxConvertToPalette.setSelected(optionsPngModel.isConvertToPaletteEnabled());
-		comboBoxTruecolourOptions.setSelectedItem(optionsPngModel.getTrueColourBits());
-
-		if(optionsPngModel.isCheckboxUseTransparentPixelEnabled()) {
-			checkboxUseTransparentPixel.setEnabled(true);
-			checkboxUseTransparentPixel.setSelected(optionsPngModel.isTransparentPixelEnabled());
+		jRadioButtonPngEncoder.setEnabled(true);
+		jRadioButtonPngEncoder.setSelected(optionsPngModel.getPngEncoderType()==PngEncoderType.Ganimed);
+		jRadioButtonImageIO.setEnabled(true);
+		jRadioButtonImageIO.setSelected(optionsPngModel.getPngEncoderType()==PngEncoderType.Java);
+		if(optionsPngModel.getPngEncoderType()==PngEncoderType.Ganimed) {
+			comboBoxTruecolourOptions.setEnabled(true);
+			if(optionsPngModel.isCheckboxUseTransparentPixelEnabled()) {
+				checkboxUseTransparentPixel.setEnabled(true);
+			}else {
+				checkboxUseTransparentPixel.setEnabled(false);
+			}
+			if(optionsPngModel.isComboBoxTransparentPixelQuantityEnabled()) {
+				comboBoxTransparentPixelQuantity.setEnabled(true);
+			}else {
+				comboBoxTransparentPixelQuantity.setEnabled(false);
+			}
+			checkboxConvertToPalette.setEnabled(true);
 		}else {
+			comboBoxTruecolourOptions.setEnabled(false);
 			checkboxUseTransparentPixel.setEnabled(false);
+			comboBoxTransparentPixelQuantity.setEnabled(false);
+			checkboxConvertToPalette.setEnabled(false);
 		}
 
-		if(optionsPngModel.isComboBoxTransparentPixelQuantityEnabled()) {
-			comboBoxTransparentPixelQuantity.setEnabled(true);
-			comboBoxTransparentPixelQuantity.setSelectedItem(optionsPngModel.getNumberOfTransparentPixel());
-		}else {
-			comboBoxTransparentPixelQuantity.setEnabled(false);
-		}
+		comboBoxTransparentPixelQuantity.setSelectedItem(optionsPngModel.getNumberOfTransparentPixel());
+		checkboxUseTransparentPixel.setSelected(optionsPngModel.isTransparentPixelEnabled());
+		comboBoxTruecolourOptions.setSelectedItem(optionsPngModel.getTrueColourBits());
+		checkboxConvertToPalette.setSelected(optionsPngModel.isConvertToPaletteEnabled());
 
 		colourReductionPanel.refreshGui();
 	}

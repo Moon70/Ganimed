@@ -182,7 +182,7 @@ public class EditorView extends JPanel{
 		textfieldAnimDelay.setText(""+editorModel.getAnimDelay());
 		textfieldAnimDelay.addKeyListener(keyListener);
 		add(textfieldAnimDelay);
-		scrollbarAnimDelay=new Scrollbar(Scrollbar.HORIZONTAL,editorModel.getAnimDelay(),1,16,1001);
+		scrollbarAnimDelay=new Scrollbar(Scrollbar.HORIZONTAL,editorModel.getAnimDelay(),1,editorModel.getAnimDelayMin(),editorModel.getAnimDelayMax()+1);
 		scrollbarAnimDelay.setBounds(xScrollbar2,y+4,255+16+16,scrollHeight);
 		scrollbarAnimDelay.setBackground(Color.DARK_GRAY);
 		scrollbarAnimDelay.addAdjustmentListener(adjustmentlistener);
@@ -212,65 +212,77 @@ public class EditorView extends JPanel{
 	public void refreshGui() {
 		boolean animationDataIsAvailable=ganimedModel.isAnimationDataAvailable();
 		textfieldCutLeft.setEnabled(animationDataIsAvailable);
+		textfieldCutLeft.setText(""+editorModel.getCutLeft());
 		scrollbarCutLeft.setEnabled(animationDataIsAvailable);
-		textfieldCutRight.setEnabled(animationDataIsAvailable);
-		scrollbarCutRight.setEnabled(animationDataIsAvailable);
-		textfieldCropLeft.setEnabled(animationDataIsAvailable);
-		scrollbarCropLeft.setEnabled(animationDataIsAvailable);
-		textfieldCropRight.setEnabled(animationDataIsAvailable);
-		scrollbarCropRight.setEnabled(animationDataIsAvailable);
-		textfieldCropTop.setEnabled(animationDataIsAvailable);
-		scrollbarCropTop.setEnabled(animationDataIsAvailable);
-		textfieldCropBottom.setEnabled(animationDataIsAvailable);
-		scrollbarCropBottom.setEnabled(animationDataIsAvailable);
-		textfieldResize.setEnabled(animationDataIsAvailable);
-		scrollbarResize.setEnabled(animationDataIsAvailable);
-		textfieldAnimFps.setEnabled(animationDataIsAvailable);
-		scrollbarAnimFps.setEnabled(animationDataIsAvailable);
-		textfieldAnimDelay.setEnabled(animationDataIsAvailable);
-		scrollbarAnimDelay.setEnabled(animationDataIsAvailable);
-		textfieldAnimEndDelay.setEnabled(animationDataIsAvailable);
-		scrollbarAnimEndDelay.setEnabled(animationDataIsAvailable);
 		scrollbarCutLeft.setMinimum(editorModel.getCutLeftMin());
 		scrollbarCutLeft.setMaximum(editorModel.getCutLeftMax()+1);
-		scrollbarCutRight.setMinimum(editorModel.getCutRightMin());
-		scrollbarCutRight.setMaximum(editorModel.getCutRightMax());
-		scrollbarCropLeft.setMinimum(editorModel.getCropLeftMin());
-		scrollbarCropLeft.setMaximum(editorModel.getCropLeftMax());
-		scrollbarCropTop.setMinimum(editorModel.getCropTopMin());
-		scrollbarCropTop.setMaximum(editorModel.getCropTopMax()+1);
-
-		scrollbarCropRight.setMinimum(editorModel.getCropRightMin());
-		scrollbarCropRight.setMaximum(editorModel.getCropRightMax()+1);
-		scrollbarCropBottom.setMinimum(editorModel.getCropBottomMin());
-		scrollbarCropBottom.setMaximum(editorModel.getCropBottomMax()+1);
-
-		scrollbarResize.setMinimum(editorModel.getResizeMin());
-		scrollbarResize.setMaximum(editorModel.getResizeMax());
-
-		textfieldCutLeft.setText(""+editorModel.getCutLeft());
 		scrollbarCutLeft.setValue(editorModel.getCutLeft());
+		
+		textfieldCutRight.setEnabled(animationDataIsAvailable);
 		textfieldCutRight.setText(""+editorModel.getCutRight());
+		scrollbarCutRight.setEnabled(animationDataIsAvailable);
+		scrollbarCutRight.setMinimum(editorModel.getCutRightMin());
+		scrollbarCutRight.setMaximum(editorModel.getCutRightMax()+1);
 		scrollbarCutRight.setValue(editorModel.getCutRight());
 
-		textfieldCropLeft.setText(""+editorModel.getCropLeft());
-		scrollbarCropLeft.setValue(editorModel.getCropLeft());
+		textfieldCropTop.setEnabled(animationDataIsAvailable);
 		textfieldCropTop.setText(""+editorModel.getCropTop());
+		scrollbarCropTop.setEnabled(animationDataIsAvailable);
+		scrollbarCropTop.setMinimum(editorModel.getCropTopMin());
+		scrollbarCropTop.setMaximum(editorModel.getCropTopMax()+1);
 		scrollbarCropTop.setValue(editorModel.getCropTop());
-		textfieldCropRight.setText(""+editorModel.getCropRight());
-		scrollbarCropRight.setValue(editorModel.getCropRight());
+
+		textfieldCropBottom.setEnabled(animationDataIsAvailable);
 		textfieldCropBottom.setText(""+editorModel.getCropBottom());
+		scrollbarCropBottom.setEnabled(animationDataIsAvailable);
+		scrollbarCropBottom.setMinimum(editorModel.getCropBottomMin());
+		scrollbarCropBottom.setMaximum(editorModel.getCropBottomMax()+1);
 		scrollbarCropBottom.setValue(editorModel.getCropBottom());
+
+		textfieldCropLeft.setEnabled(animationDataIsAvailable);
+		textfieldCropLeft.setText(""+editorModel.getCropLeft());
+		scrollbarCropLeft.setEnabled(animationDataIsAvailable);
+		scrollbarCropLeft.setMinimum(editorModel.getCropLeftMin());
+		scrollbarCropLeft.setMaximum(editorModel.getCropLeftMax()+1);
+		scrollbarCropLeft.setValue(editorModel.getCropLeft());
+		
+		textfieldCropRight.setEnabled(animationDataIsAvailable);
+		textfieldCropRight.setText(""+editorModel.getCropRight());
+		scrollbarCropRight.setEnabled(animationDataIsAvailable);
+		scrollbarCropRight.setMinimum(editorModel.getCropRightMin());
+		scrollbarCropRight.setMaximum(editorModel.getCropRightMax()+1);
+		scrollbarCropRight.setValue(editorModel.getCropRight());
+		
+		textfieldResize.setEnabled(animationDataIsAvailable);
 		textfieldResize.setText(""+editorModel.getResizePercent());
+		scrollbarResize.setEnabled(animationDataIsAvailable);
+		scrollbarResize.setMinimum(editorModel.getResizePercentMin());
+		scrollbarResize.setMaximum(editorModel.getResizePercentMax()+1);
 		scrollbarResize.setValue(editorModel.getResizePercent());
+		
+		textfieldAnimFps.setEnabled(animationDataIsAvailable);
+		scrollbarAnimFps.setEnabled(animationDataIsAvailable);
+		scrollbarAnimFps.setMinimum(editorModel.getAnimFpsMin());
+		scrollbarAnimFps.setMaximum(editorModel.getAnimFpsMax()+1);
+
+		textfieldAnimDelay.setEnabled(animationDataIsAvailable);
+		scrollbarAnimDelay.setEnabled(animationDataIsAvailable);
+		scrollbarAnimDelay.setMinimum(editorModel.getAnimDelayMin());
+		scrollbarAnimDelay.setMaximum(editorModel.getAnimDelayMax()+1);
+		
+		textfieldAnimEndDelay.setEnabled(animationDataIsAvailable);
+		scrollbarAnimEndDelay.setEnabled(animationDataIsAvailable);
+		scrollbarAnimEndDelay.setMinimum(editorModel.getAnimEndDelayMin());
+		scrollbarAnimEndDelay.setMaximum(editorModel.getAnimEndDelayMax()+1);
+
 		if(animationDataIsAvailable) {
 			textfieldAnimFps.setText(""+editorModel.getAnimFps());
-			scrollbarAnimFps.setMaximum(editorModel.getAnimFpsMax());
 			scrollbarAnimFps.setValue(editorModel.getAnimFps());
+			
 			textfieldAnimDelay.setText(""+editorModel.getAnimDelay());
 			scrollbarAnimDelay.setValue(editorModel.getAnimDelay());
+			
 			textfieldAnimEndDelay.setText(""+editorModel.getAnimEndDelay());
-			scrollbarAnimEndDelay.setMaximum(editorModel.getAnimEndDelayMax());
 			scrollbarAnimEndDelay.setValue(editorModel.getAnimEndDelay());
 		}
 	}

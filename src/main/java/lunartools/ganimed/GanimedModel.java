@@ -29,7 +29,7 @@ public class GanimedModel extends Observable{
 	private File fileRawImages;
 	private File fileImages;
 
-	private double numberOfImagesToSkip;
+	private double animationIncrement;
 
 	private int imageWidth;
 	private int imageHeight;
@@ -118,16 +118,16 @@ public class GanimedModel extends Observable{
 		return imageHeight;
 	}
 
-	private void setNumberOfImagesToSkip(double number) {
-		if(this.numberOfImagesToSkip==number) {
+	public void setAnimationIncrement(double number) {
+		if(this.animationIncrement==number) {
 			return;
 		}
-		this.numberOfImagesToSkip=number;
+		this.animationIncrement=number;
 		sendMessage(SimpleEvents.MODEL_ANIMNUMBEROFIMAGESCHANGED);
 	}
 
-	public double getNumberOfImagesToSkip() {
-		return numberOfImagesToSkip;
+	public double getAnimationIncrement() {
+		return animationIncrement;
 	}
 
 	public void setImageData(AnimationData animationData) {
@@ -212,7 +212,6 @@ public class GanimedModel extends Observable{
 		return optionsGifModel;
 	}
 
-	//TODO: ask AnimationData if animation data is available, or better move this method to AnimationData...
 	public boolean isAnimationDataAvailable() {
 		return animationData!=null && animationData.size()>0;
 	}
@@ -223,18 +222,6 @@ public class GanimedModel extends Observable{
 
 	public EditorModel getEditorModel() {
 		return editorModel;
-	}
-
-	public void calculateAnimPlaybackParameter() {
-		int animFps=editorModel.getAnimFps();
-		if(animFps==0) {
-			numberOfImagesToSkip=0;
-			editorModel.setAnimDelay(0);
-		}else {
-			editorModel.setAnimDelay((int)(1000.0/animFps+0.5));
-			setNumberOfImagesToSkip(1.0*getImageSelectionModel().getImagesFps()/animFps);
-		}
-		sendMessage(SimpleEvents.MODEL_ANIMPLAYBACKVALUESCHANGED);
 	}
 
 }

@@ -52,7 +52,7 @@ public class AnimationThread extends Thread{
 				}
 				BufferedImage bufferedImage=imageService.getLogicalResultBufferedImage((int)index);
 				graphics.drawImage(bufferedImage,offsetX, offsetY,null);
-				index+=ganimedModel.getNumberOfImagesToSkip();
+				index+=ganimedModel.getAnimationIncrement();
 				if(index>cutRight) {
 					index=cutLeft;
 				}

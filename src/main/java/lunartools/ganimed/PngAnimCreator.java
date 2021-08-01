@@ -38,8 +38,7 @@ public class PngAnimCreator implements AnimCreator{
 		}else {
 			apngBuilder.setMinimumNumberOfTransparentPixel(0);
 			if(optionsPngModel.isConvertToPaletteEnabled()) {
-				//TODO: Set to 256 colours
-				apngBuilder.setMaximumNumberOfColours(255);
+				apngBuilder.setMaximumNumberOfColours(256);
 			}else {
 				apngBuilder.setMaximumNumberOfColours(0);
 			}
@@ -56,9 +55,9 @@ public class PngAnimCreator implements AnimCreator{
 		case NO_DITHERING:
 			apngBuilder.setDitheringAlgorithm(DitheringAlgorithm.NO_DITHERING);
 			break;
-			//		case SIMPLE_DITHERING1:
-			//			apngBuilder.setDitheringAlgorithm(DitheringAlgorithm.SIMPLE_DITHERING1);
-			//			break;
+			//case SIMPLE_DITHERING1:
+			//	apngBuilder.setDitheringAlgorithm(DitheringAlgorithm.SIMPLE_DITHERING1);
+			//	break;
 		case FLOYD_STEINBERG:
 			apngBuilder.setDitheringAlgorithm(DitheringAlgorithm.FLOYD_STEINBERG);
 			break;
@@ -96,7 +95,11 @@ public class PngAnimCreator implements AnimCreator{
 		}
 		previousImageData=imageData;
 		Png png;
-		png=apngBuilder.buildPng(imageData.getResultBufferedImage());
+		if(!imageData.isImagedataChanged() && imageData.getFile()!=null) {
+			png=apngBuilder.buildPng(imageData.getFile());
+		}else {
+			png=apngBuilder.buildPng(imageData.getResultBufferedImage());
+		}
 		png.setDelay(delay);
 		previousPng=png;
 		if(apng==null) {

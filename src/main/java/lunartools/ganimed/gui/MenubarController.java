@@ -15,7 +15,7 @@ public class MenubarController implements ActionListener{
 	private static final String ACTIONCOMMAND_SAVEAS = "saveas";
 	private static final String ACTIONCOMMAND_SAVEIMAGES = "saveframes";
 	private static final String ACTIONCOMMAND_SAVERAWIMAGES = "saveRawFrames";
-	private static final String ACTIONCOMMAND_CLOSEIMAGES = "closer";
+	private static final String ACTIONCOMMAND_CLEARIMAGES = "closeImages";
 	private static final String ACTIONCOMMAND_ABOUT = "about";
 	private static final String ACTIONCOMMAND_EXIT = "exit";
 
@@ -66,8 +66,8 @@ public class MenubarController implements ActionListener{
 		menuItem_SaveFrames.setActionCommand(ACTIONCOMMAND_SAVEIMAGES);
 		menu.add(menuItem_SaveFrames);
 
-		MenuItem menuItem_Clear=new MenuItem("Close Images");
-		menuItem_Clear.setActionCommand(ACTIONCOMMAND_CLOSEIMAGES);
+		menuItem_Clear=new MenuItem("Clear Images");
+		menuItem_Clear.setActionCommand(ACTIONCOMMAND_CLEARIMAGES);
 		menuItem_Clear.setEnabled(true);
 		menu.add(menuItem_Clear);
 
@@ -119,8 +119,8 @@ public class MenubarController implements ActionListener{
 			ganimedView.saveImages();
 		}else if(actionCommand.equals(ACTIONCOMMAND_SAVERAWIMAGES)){
 			ganimedView.saveRawImages();
-		}else if(actionCommand.equals(ACTIONCOMMAND_CLOSEIMAGES)){
-			ganimedView.closeImages();
+		}else if(actionCommand.equals(ACTIONCOMMAND_CLEARIMAGES)){
+			ganimedView.clearImages();
 		}else if(actionCommand.equals(ACTIONCOMMAND_ABOUT)){
 			ganimedView.showMessageboxAbout();
 		}

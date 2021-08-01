@@ -105,7 +105,7 @@ public class GanimedView extends ObservableJFrame implements Observer{
 		setMenuBar(this.menubarController.createMenubar());
 
 		try {
-			this.setIconImage(ImageTools.createImage("/icons/ProgramIcon.png"));
+			this.setIconImage(ImageTools.createImageFromResource("/icons/ProgramIcon.png"));
 		} catch (IOException e) {
 			System.err.println("error loading frame icon");
 			e.printStackTrace();
@@ -151,6 +151,7 @@ public class GanimedView extends ObservableJFrame implements Observer{
 		menubarController.menuItem_SaveAs.setEnabled(model.isAnimationDataAvailable());
 		menubarController.menuItem_SaveRawFrames.setEnabled(model.isAnimationDataAvailable() && model.getAnimationData().isCaptured());
 		menubarController.menuItem_SaveFrames.setEnabled(model.isAnimationDataAvailable());
+		menubarController.menuItem_Clear.setEnabled(model.isAnimationDataAvailable());
 		
 		imageSelectionView.refreshGui();
 		editorView.refreshGui();
@@ -262,10 +263,11 @@ public class GanimedView extends ObservableJFrame implements Observer{
 		return optionsPanel;
 	}
 
-	public void closeImages() {
+	public void clearImages() {
 		model.setImageData(null);
-		refreshSelectionGui();
+		refreshGui();
 		System.gc();
+		labelStatus.setText("images cleared");
 	}
 
 	private File fileSelector(FileFilter fileFilter,File lastFile) {

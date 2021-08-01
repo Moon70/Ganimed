@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lunartools.JavaTools;
 import lunartools.ganimed.AnimationData;
 import lunartools.ganimed.GanimedController;
 import lunartools.ganimed.GanimedModel;
@@ -36,7 +37,7 @@ public class ScreenCaptureThread extends Thread{
 			}
 			int maxMemory=(int)(Runtime.getRuntime().maxMemory()>>20);
 			int currentMemory;
-			forceGarbageCollector();
+			JavaTools.forceGarbageCollector();
 			
 			int breakMemory;
 			breakMemory=maxMemory*80/100;
@@ -95,16 +96,4 @@ public class ScreenCaptureThread extends Thread{
 		logger.debug("stopScreenCapture");
 	}
 
-	@SuppressWarnings("unused")
-	public static void forceGarbageCollector() {
-		try {
-			long maxMem=Runtime.getRuntime().maxMemory()>>2;
-			if((maxMem)>Integer.MAX_VALUE) {
-				int[][] temp=new int[1+(int)(maxMem/Integer.MAX_VALUE)][Integer.MAX_VALUE-8];
-			}else {
-				int[] temp=new int[(int)maxMem];
-			}
-		} catch (OutOfMemoryError e) {}
-	}
-	
 }

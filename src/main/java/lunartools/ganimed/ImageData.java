@@ -73,4 +73,7 @@ public class ImageData {
 		count++;
 	}
 	
+	public boolean isImagedataChanged() {
+		return animationData.getGanimedModel().getEditorModel().isImagedataChanged();
+	}
 }

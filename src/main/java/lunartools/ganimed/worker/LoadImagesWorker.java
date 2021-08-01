@@ -31,8 +31,8 @@ public class LoadImagesWorker extends SwingWorker<Void, Void> {
 			File fileFolder=ganimedModel.getImageSelectionModel().getImageFolder();
 			File[] fileImages=FileTools.listFilesSorted(fileFolder);
 			int size=fileImages.length;
-			int progressX=0;
-			int progressStep=6400/size;
+			float progressX=0;
+			float progressStep=100.0f/size;
 
 			setProgress(0);
 			AnimationData animationData=new AnimationData(ganimedModel);
@@ -41,7 +41,7 @@ public class LoadImagesWorker extends SwingWorker<Void, Void> {
 					return null;
 				}
 				firePropertyChange(ProgressDialog.PROPERTY_LINE2, null,fileImages[i]);
-				setProgress((progressX+=progressStep)>>6);
+				setProgress((int)(progressX+=progressStep));
 				try {
 					animationData.addFile(fileImages[i]);
 				} catch (Exception e) {
