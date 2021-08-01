@@ -28,4 +28,8 @@ For more infos please visit [Ganimed wiki](https://github.com/Moon70/Ganimed/wik
 
 ![](Ganimed_screenshot.jpg)
 
+
   
+[![Download Ganimed](https://a.fsdn.com/con/app/sf-download-button)](https://sourceforge.net/projects/ganimed/files/latest/download)
+
+[![Download Ganimed](https://img.shields.io/sourceforge/dt/ganimed.svg)](https://sourceforge.net/projects/ganimed/files/latest/download)
